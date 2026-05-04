@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Materials Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #07071a;
+    --surface: rgba(255,255,255,0.03);
+    --surface2: rgba(255,255,255,0.055);
+    --surface3: rgba(255,255,255,0.09);
+    --pink: #f72585;
+    --pink2: #ff6b9d;
+    --blue: #4cc9f0;
+    --blue2: #4361ee;
+    --gold: #ffd166;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: rgba(255,255,255,0.07);
+    --danger: #ff6b6b;
+    --success: #06d6a0;
+    --radius: 18px;
+    --radius-sm: 12px;
+    --radius-pill: 999px;
+    --ease: cubic-bezier(0.4, 0, 0.2, 1);
+    --t: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    width: 800px; height: 800px;
+    top: -350px; left: -250px;
+    background: radial-gradient(circle, rgba(247,37,133,0.09) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+    animation: orb1 22s ease-in-out infinite;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    width: 700px; height: 700px;
+    bottom: -250px; right: -200px;
+    background: radial-gradient(circle, rgba(76,201,240,0.08) 0%, transparent 65%);
+    pointer-events: none;
+    z-index: 0;
+    animation: orb2 28s ease-in-out infinite;
+  }
+
+  @keyframes orb1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(70px,50px)} }
+  @keyframes orb2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-60px,-40px)} }
+
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 48px 48px 36px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: wrap;
+    background: rgba(7,7,26,0.5);
+    backdrop-filter: blur(20px);
+  }
+
+  .header-title { display: flex; flex-direction: column; gap: 6px; }
+
+  .eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    background: linear-gradient(90deg, var(--pink), var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  h1 {
+    font-size: clamp(30px, 4vw, 54px);
+    font-weight: 800;
+    line-height: 1;
+    background: linear-gradient(135deg, #fff 10%, var(--pink2) 50%, var(--blue) 90%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .api-status {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+    flex-shrink: 0;
+    animation: pulse-dot 2.5s ease-in-out infinite;
+  }
+  .api-status.error { background: var(--danger); animation: none; box-shadow: 0 0 8px var(--danger); }
+
+  @keyframes pulse-dot {
+    0%,100% { box-shadow: 0 0 5px var(--success); }
+    50% { box-shadow: 0 0 14px var(--success), 0 0 28px rgba(6,214,160,0.25); }
+  }
+
+  main {
+    position: relative;
+    z-index: 10;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 36px 48px;
+  }
+
+  .search-bar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+
+  .search-input-wrap {
+    flex: 1;
+    min-width: 220px;
+    position: relative;
+  }
+
+  .search-input-wrap svg {
+    position: absolute;
+    left: 18px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    transition: color var(--t);
+  }
+  .search-input-wrap:focus-within svg { color: var(--pink2); }
+
+  input[type="text"] {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    padding: 14px 20px 14px 48px;
+    outline: none;
+    transition: var(--t);
+  }
+  input[type="text"]:focus {
+    border-color: rgba(247,37,133,0.5);
+    box-shadow: 0 0 0 3px rgba(247,37,133,0.1), 0 0 24px rgba(247,37,133,0.12);
+    background: var(--surface3);
+  }
+  input[type="text"]::placeholder { color: var(--muted); }
+
+  .search-btn {
+    background: linear-gradient(135deg, var(--pink), var(--blue2));
+    color: #fff;
+    border: none;
+    border-radius: var(--radius-pill);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 14px 32px;
+    cursor: pointer;
+    letter-spacing: 0.05em;
+    transition: var(--t);
+    white-space: nowrap;
+    box-shadow: 0 4px 20px rgba(247,37,133,0.3);
+  }
+  .search-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(247,37,133,0.45); filter: brightness(1.08); }
+  .search-btn:active { transform: scale(0.97); }
+  .search-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; filter: none; }
+
+  .filters {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-right: 2px;
+  }
+
+  .filter-chip {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: var(--t);
+    letter-spacing: 0.05em;
+  }
+  .filter-chip:hover { border-color: rgba(247,37,133,0.4); color: var(--pink2); background: rgba(247,37,133,0.07); }
+  .filter-chip.active {
+    background: linear-gradient(135deg, rgba(247,37,133,0.18), rgba(67,97,238,0.18));
+    border-color: rgba(247,37,133,0.5);
+    color: var(--pink2);
+    box-shadow: 0 0 16px rgba(247,37,133,0.15);
+  }
+
+  .range-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .range-group {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color var(--t), box-shadow var(--t);
+  }
+  .range-group:hover { border-color: rgba(76,201,240,0.3); box-shadow: 0 0 20px rgba(76,201,240,0.06); }
+
+  .range-group label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--blue);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+
+  .range-inputs { display: flex; align-items: center; gap: 8px; }
+
+  .range-group input[type="number"] {
+    width: 78px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    padding: 7px 14px;
+    outline: none;
+    transition: var(--t);
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  .range-group input[type="number"]::-webkit-inner-spin-button,
+  .range-group input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .range-group input[type="number"]::placeholder { color: var(--muted); }
+  .range-group input[type="number"]:focus {
+    border-color: rgba(76,201,240,0.55);
+    box-shadow: 0 0 0 2px rgba(76,201,240,0.12);
+    background: rgba(76,201,240,0.05);
+  }
+
+  .range-sep { color: var(--muted); font-size: 11px; font-family: 'Space Mono', monospace; }
+
+  .stats-bar {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .stat { display: flex; flex-direction: column; gap: 3px; }
+
+  .stat-val {
+    font-size: 26px;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--pink2), var(--blue));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .stat-lbl {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  #results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    cursor: pointer;
+    transition: transform var(--t), box-shadow var(--t), border-color var(--t), background var(--t);
+    position: relative;
+    overflow: hidden;
+    animation: fadeUp 0.5s var(--ease) both;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--pink) 40%, var(--blue) 60%, transparent);
+    opacity: 0;
+    transition: opacity var(--t);
+  }
+
+  .card:hover {
+    border-color: rgba(247,37,133,0.22);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.35), 0 0 30px rgba(247,37,133,0.07);
+    background: var(--surface2);
+  }
+  .card:hover::before { opacity: 1; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(18px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0)   scale(1);    }
+  }
+
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+
+  .formula { font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -0.01em; }
+
+  .material-type {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .type-metal        { background: rgba(255,209,102,0.1);  color: var(--gold);  border: 1px solid rgba(255,209,102,0.2); }
+  .type-semiconductor{ background: rgba(76,201,240,0.1);   color: var(--blue);  border: 1px solid rgba(76,201,240,0.2);  }
+  .type-insulator    { background: rgba(247,37,133,0.1);   color: var(--pink2); border: 1px solid rgba(247,37,133,0.2);  }
+  .type-unknown      { background: rgba(148,163,184,0.08); color: var(--muted); border: 1px solid rgba(148,163,184,0.15);}
+
+  .mp-id { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+
+  .props-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  .prop {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 10px 12px;
+    transition: background var(--t);
+  }
+  .card:hover .prop { background: var(--surface3); }
+
+  .prop-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 4px;
+  }
+
+  .prop-val { font-size: 14px; font-weight: 600; color: var(--text); font-variant-numeric: tabular-nums; }
+  .prop-val.highlight { color: var(--pink2); }
+
+  .loader {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 0;
+    gap: 20px;
+    grid-column: 1/-1;
+  }
+  .loader.active { display: flex; }
+
+  .spinner {
+    width: 44px; height: 44px;
+    border: 3px solid var(--border);
+    border-top-color: var(--pink);
+    border-right-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.85s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loader-text { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); letter-spacing: 0.1em; }
+
+  .state-msg {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 80px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+  .state-msg .icon { font-size: 44px; }
+  .state-msg p { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--muted); max-width: 380px; line-height: 1.7; }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(7,7,26,0.8);
+    backdrop-filter: blur(16px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    max-width: 580px;
+    width: 100%;
+    max-height: 85vh;
+    overflow: hidden;
+    position: relative;
+    animation: modalIn 0.3s var(--ease);
+    backdrop-filter: blur(24px);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.5), 0 0 60px rgba(247,37,133,0.05);
+  }
+
+  .modal-inner {
+    overflow-y: auto;
+    max-height: 85vh;
+    padding: 36px;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.94) translateY(12px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0);    }
+  }
+
+  .modal-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: var(--t);
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+  }
+  .modal-back:hover { color: var(--pink2); border-color: rgba(247,37,133,0.4); background: rgba(247,37,133,0.08); }
+
+  .modal-inner::-webkit-scrollbar { width: 5px; }
+  .modal-inner::-webkit-scrollbar-track { background: transparent; }
+  .modal-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+  .modal-inner::-webkit-scrollbar-thumb:hover { background: rgba(247,37,133,0.45); }
+
+  .modal h2 {
+    font-size: 30px; font-weight: 800; margin-bottom: 4px;
+    background: linear-gradient(135deg, var(--text), var(--pink2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .modal .mp-id { font-size: 12px; }
+
+  .modal-section { margin-top: 22px; border-top: 1px solid var(--border); padding-top: 18px; }
+
+  .modal-section h3 {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    background: linear-gradient(90deg, var(--pink), var(--blue));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin-bottom: 14px;
+  }
+
+  .modal-props { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .modal-prop {
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    transition: var(--t);
+  }
+  .modal-prop:hover { background: var(--surface3); border-color: rgba(247,37,133,0.15); }
+  .modal-prop .prop-label { font-size: 10px; margin-bottom: 5px; }
+  .modal-prop .prop-val { font-size: 16px; }
+
+  .elements-list { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+
+  .element-tag {
+    background: linear-gradient(135deg, rgba(247,37,133,0.12), rgba(76,201,240,0.12));
+    border: 1px solid rgba(247,37,133,0.22);
+    color: var(--pink2);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    padding: 5px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    transition: var(--t);
+  }
+  .element-tag:hover { background: linear-gradient(135deg, rgba(247,37,133,0.2), rgba(76,201,240,0.2)); }
+
+  .pagination { display: flex; gap: 8px; justify-content: center; margin-top: 36px; align-items: center; flex-wrap: wrap; }
+
+  .page-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: var(--t);
+  }
+  .page-btn:hover { border-color: var(--pink); color: var(--pink2); background: rgba(247,37,133,0.08); }
+  .page-btn.active {
+    background: linear-gradient(135deg, var(--pink), var(--blue2));
+    color: #fff; border-color: transparent;
+    box-shadow: 0 4px 20px rgba(247,37,133,0.35);
+    font-weight: 700;
+  }
+  .page-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+
+  .sort-wrap { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+
+  .sort-select-wrap { position: relative; }
+
+  .sort-select-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 9px 14px 9px 16px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: var(--t);
+    white-space: nowrap;
+    min-width: 140px;
+    justify-content: space-between;
+  }
+  .sort-select-btn:hover, .sort-select-wrap.open .sort-select-btn {
+    border-color: rgba(76,201,240,0.45);
+    background: var(--surface3);
+    color: var(--blue);
+  }
+  .sort-select-btn svg { transition: transform var(--t); flex-shrink: 0; }
+  .sort-select-wrap.open .sort-select-btn svg { transform: rotate(180deg); }
+
+  .sort-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: rgba(8,8,28,0.97);
+    border: 1px solid rgba(76,201,240,0.2);
+    border-radius: var(--radius-sm);
+    backdrop-filter: blur(24px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6), 0 0 24px rgba(76,201,240,0.07);
+    overflow: hidden;
+    z-index: 200;
+    animation: dropIn 0.18s var(--ease);
+  }
+  .sort-select-wrap.open .sort-dropdown-menu { display: block; }
+  @keyframes dropIn {
+    from { opacity:0; transform: translateY(-8px) scale(0.97); }
+    to   { opacity:1; transform: translateY(0) scale(1); }
+  }
+  .sort-dropdown-menu button {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 11px 16px;
+    text-align: left;
+    cursor: pointer;
+    transition: background var(--t), color var(--t);
+    letter-spacing: 0.05em;
+  }
+  .sort-dropdown-menu button:last-child { border-bottom: none; }
+  .sort-dropdown-menu button:hover { background: rgba(76,201,240,0.08); color: var(--blue); }
+  .sort-dropdown-menu button.active {
+    background: linear-gradient(90deg, rgba(76,201,240,0.13), rgba(67,97,238,0.08));
+    color: var(--blue);
+    font-weight: 700;
+  }
+
+  .results-header { display: flex; align-items: center; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
+  .results-count { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  @media (max-width: 600px) {
+    header { padding: 24px 20px 20px; }
+    main { padding: 20px; }
+    .modal-inner { padding: 24px; }
+    .modal-props { grid-template-columns: 1fr; }
+  }
+
+  /* ── Sidebar Toolbar ────────────────────────────── */
+  .sidebar {
+    position: fixed;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    z-index: 50;
+    width: 52px;
+    overflow: hidden;
+    background: rgba(10,10,30,0.82);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 0 14px 14px 0;
+    padding: 10px 0;
+    transition: width 0.25s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .sidebar:hover {
+    width: 140px;
+  }
+
+  .sb-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color var(--t), background var(--t);
+    white-space: nowrap;
+    width: 100%;
+    flex-shrink: 0;
+  }
+
+  .sb-btn svg { flex-shrink: 0; }
+
+  .sb-btn:hover {
+    color: var(--pink2);
+    background: rgba(247,37,133,0.1);
+  }
+
+  .sb-btn:active { opacity: 0.7; }
+
+  .sb-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+  }
+
+  .sidebar:hover .sb-label { opacity: 1; }
+
+  @media (max-width: 720px) { .sidebar { display: none; } }
+
+  /* ── Sidebar badge ── */
+  .sb-icon-wrap { position: relative; flex-shrink: 0; display: flex; }
+
+  .sb-badge {
+    position: absolute;
+    top: -5px; right: -7px;
+    background: var(--pink);
+    color: #fff;
+    font-family: 'Space Mono', monospace;
+    font-size: 8px;
+    font-weight: 700;
+    min-width: 15px; height: 15px;
+    border-radius: 8px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 0 3px;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .sb-divider { height: 1px; background: var(--border); margin: 4px 12px; flex-shrink: 0; }
+
+  .sb-btn.sb-active { color: var(--blue); }
+
+  /* ── Card star (favorites) ── */
+  .card-star {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    padding: 3px;
+    border-radius: 6px;
+    transition: color var(--t), transform 0.15s;
+    line-height: 0;
+    flex-shrink: 0;
+  }
+  .card-star:hover { color: var(--gold); transform: scale(1.25); }
+  .card-star.fav-active { color: var(--gold); }
+  .card-star.fav-active svg { fill: var(--gold); }
+
+  /* ── Card compare ── */
+  .card-compare-row { margin-top: 10px; display: flex; align-items: center; justify-content: flex-end; }
+
+  .compare-cb-wrap { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+  .compare-cb {
+    appearance: none; -webkit-appearance: none;
+    width: 15px; height: 15px;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    background: var(--surface2);
+    cursor: pointer;
+    transition: var(--t);
+    position: relative;
+    flex-shrink: 0;
+  }
+  .compare-cb:checked { background: var(--blue2); border-color: var(--blue); }
+  .compare-cb:checked::after {
+    content: '';
+    position: absolute;
+    left: 3px; top: 1px;
+    width: 5px; height: 8px;
+    border: 2px solid #fff;
+    border-top: none; border-left: none;
+    transform: rotate(45deg);
+  }
+  .compare-cb-lbl {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    pointer-events: none;
+    user-select: none;
+    transition: color var(--t);
+  }
+  .compare-cb-wrap:hover .compare-cb-lbl { color: var(--blue); }
+
+  .card.compare-selected {
+    border-color: rgba(76,201,240,0.5);
+    box-shadow: 0 0 0 2px rgba(76,201,240,0.18), 0 8px 30px rgba(0,0,0,0.3);
+  }
+
+  /* ── Panel modals (favorites + compare) ── */
+  .panel-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(7,7,26,0.78);
+    backdrop-filter: blur(16px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .panel-modal.open { display: flex; }
+
+  .panel-box {
+    background: rgba(12,12,36,0.96);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px;
+    width: 100%;
+    max-height: 84vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: modalIn 0.28s var(--ease);
+    backdrop-filter: blur(24px);
+    box-shadow: 0 24px 80px rgba(0,0,0,0.55);
+  }
+  .panel-box.panel-wide  { max-width: 920px; }
+  .panel-box.panel-narrow { max-width: 680px; }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 28px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .panel-title {
+    font-size: 18px; font-weight: 800;
+    background: linear-gradient(135deg, #fff 20%, var(--pink2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  }
+  .panel-close {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 7px 16px;
+    cursor: pointer;
+    transition: var(--t);
+    white-space: nowrap;
+  }
+  .panel-close:hover { color: var(--pink2); border-color: rgba(247,37,133,0.4); background: rgba(247,37,133,0.07); }
+
+  .panel-body {
+    overflow-y: auto;
+    padding: 24px 28px 28px;
+    flex: 1;
+  }
+  .panel-body::-webkit-scrollbar { width: 5px; }
+  .panel-body::-webkit-scrollbar-track { background: transparent; }
+  .panel-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+  .panel-body::-webkit-scrollbar-thumb:hover { background: rgba(247,37,133,0.4); }
+
+  /* ── Compare table ── */
+  .compare-wrap { overflow-x: auto; }
+
+  .compare-tbl { width: 100%; border-collapse: collapse; font-family: 'Space Mono', monospace; font-size: 12px; }
+
+  .compare-tbl th, .compare-tbl td { padding: 11px 16px; border-bottom: 1px solid var(--border); text-align: left; }
+
+  .compare-tbl th {
+    background: var(--surface2);
+    color: var(--text);
+    font-weight: 700;
+    font-size: 13px;
+    font-family: 'Syne', sans-serif;
+    white-space: nowrap;
+  }
+  .compare-tbl th.prop-col {
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    background: var(--surface);
+    min-width: 130px;
+  }
+  .compare-tbl td { color: var(--text); background: var(--surface); transition: background var(--t); }
+  .compare-tbl td:hover { background: var(--surface2); }
+  .compare-tbl td.val-hi { color: var(--pink2); font-weight: 700; }
+  .compare-tbl tr:last-child th, .compare-tbl tr:last-child td { border-bottom: none; }
+
+  .compare-hint { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--muted); text-align: center; padding: 40px 0; line-height: 1.8; }
+
+  .compare-clear-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 7px 16px;
+    cursor: pointer;
+    transition: var(--t);
+    margin-bottom: 18px;
+    display: inline-block;
+  }
+  .compare-clear-btn:hover { color: var(--danger); border-color: rgba(255,107,107,0.4); background: rgba(255,107,107,0.07); }
+
+  /* ── Export flash ── */
+  .export-toast {
+    position: fixed;
+    bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(6,214,160,0.12);
+    border: 1px solid rgba(6,214,160,0.3);
+    color: var(--success);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    padding: 10px 22px;
+    border-radius: var(--radius-pill);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+    z-index: 200;
+    white-space: nowrap;
+  }
+  .export-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── Periodic Table ────────────────────────────── */
+  #periodic-table-section { margin-bottom: 28px; }
+
+  .pt-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+
+  .pt-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding-top: 2px;
+  }
+
+  .pt-legend {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .pt-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Space Mono', monospace;
+    font-size: 8.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .pt-legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .pt-wrap {
+    overflow-x: auto;
+    overflow-y: hidden;
+    border-radius: var(--radius);
+    padding: 12px 8px 8px;
+    scrollbar-width: none;
+  }
+  .pt-wrap::-webkit-scrollbar { display: none; }
+
+  .periodic-table {
+    display: grid;
+    grid-template-columns: repeat(18, minmax(0,1fr));
+    grid-template-rows: repeat(7, auto) 14px auto auto;
+    gap: 3px;
+    min-width: 640px;
+  }
+
+  .pt-cell {
+    background: var(--el-bg);
+    border: 1px solid var(--el-border);
+    border-radius: 5px;
+    color: var(--el-color);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.14s, filter 0.14s, box-shadow 0.14s;
+    padding: 3px 1px;
+    aspect-ratio: 1;
+    text-align: center;
+    line-height: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  .pt-cell:hover {
+    filter: brightness(1.4);
+    transform: scale(1.18);
+    z-index: 10;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.5);
+  }
+  .pt-cell:active { transform: scale(1.06); }
+  .pt-cell.pt-placeholder {
+    cursor: default;
+    opacity: 0.45;
+    font-family: 'Space Mono', monospace;
+    font-size: 7px;
+  }
+  .pt-cell.pt-placeholder:hover { filter: none; transform: none; box-shadow: none; }
+
+  .pt-num  { font-family: 'Space Mono', monospace; font-size: 6.5px; opacity: 0.6; }
+  .pt-sym  { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800; line-height: 1.1; }
+  .pt-name { font-family: 'Space Mono', monospace; font-size: 5.5px; opacity: 0.55; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px; }
+
+  .pt-alkali          { --el-color:#f72585; --el-bg:rgba(247,37,133,0.1);  --el-border:rgba(247,37,133,0.3);  }
+  .pt-alkaline-earth  { --el-color:#ff9a3c; --el-bg:rgba(255,154,60,0.1);  --el-border:rgba(255,154,60,0.3);  }
+  .pt-transition      { --el-color:#4cc9f0; --el-bg:rgba(76,201,240,0.1);  --el-border:rgba(76,201,240,0.22); }
+  .pt-post-transition { --el-color:#06d6a0; --el-bg:rgba(6,214,160,0.1);   --el-border:rgba(6,214,160,0.25);  }
+  .pt-metalloid       { --el-color:#c77dff; --el-bg:rgba(199,125,255,0.1); --el-border:rgba(199,125,255,0.28);}
+  .pt-nonmetal        { --el-color:#7bc67e; --el-bg:rgba(123,198,126,0.1); --el-border:rgba(123,198,126,0.25);}
+  .pt-halogen         { --el-color:#48cae4; --el-bg:rgba(72,202,228,0.1);  --el-border:rgba(72,202,228,0.25); }
+  .pt-noble-gas       { --el-color:#94a3b8; --el-bg:rgba(148,163,184,0.07);--el-border:rgba(148,163,184,0.2); }
+  .pt-lanthanide      { --el-color:#ffd166; --el-bg:rgba(255,209,102,0.1); --el-border:rgba(255,209,102,0.28);}
+  .pt-actinide        { --el-color:#f4a261; --el-bg:rgba(244,162,97,0.1);  --el-border:rgba(244,162,97,0.28); }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <button class="sb-btn" onclick="goRandomMaterial()" title="Random Material">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <rect x="2" y="2" width="20" height="20" rx="5"/>
+      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/>
+      <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/>
+      <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" stroke="none"/>
+      <circle cx="8.5" cy="15.5" r="1.5" fill="currentColor" stroke="none"/>
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+    </svg>
+    <span class="sb-label">Random</span>
+  </button>
+</aside>
+
+<header>
+  <div class="header-title">
+    <span class="eyebrow">Materials Project API</span>
+    <h1>Materials Explorer</h1>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div class="api-status" id="api-status"></div>
+    <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;">Connected</span>
+  </div>
+</header>
+
+<main>
+  <div class="search-bar">
+    <div class="search-input-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="text" id="element-input" placeholder="e.g. Fe, Iron, Fe-O, Iron-Oxygen, Si-C …">
+    </div>
+    <button class="search-btn" id="search-btn" onclick="doSearch()">Search</button>
+  </div>
+
+  <div class="filters">
+    <span class="filter-label">Type</span>
+    <button class="filter-chip active" data-filter="all" onclick="setFilter('all',this)">All</button>
+    <button class="filter-chip" data-filter="metal" onclick="setFilter('metal',this)">Metal</button>
+    <button class="filter-chip" data-filter="semiconductor" onclick="setFilter('semiconductor',this)">Semiconductor</button>
+    <button class="filter-chip" data-filter="insulator" onclick="setFilter('insulator',this)">Insulator</button>
+    <div class="sort-wrap">
+      <span class="filter-label">Sort</span>
+      <div class="sort-select-wrap" id="sort-select-wrap">
+        <button class="sort-select-btn" onclick="toggleSortMenu(event)">
+          <span id="sort-label">Bandgap ↑</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="sort-dropdown-menu" id="sort-dropdown">
+          <button class="active" onclick="selectSortOpt('bandgap_asc','Bandgap ↑',this)">Bandgap ↑</button>
+          <button onclick="selectSortOpt('bandgap_desc','Bandgap ↓',this)">Bandgap ↓</button>
+          <button onclick="selectSortOpt('eform_asc','Formation E ↑',this)">Formation E ↑</button>
+          <button onclick="selectSortOpt('eform_desc','Formation E ↓',this)">Formation E ↓</button>
+          <button onclick="selectSortOpt('nsites_asc','Sites ↑',this)">Sites ↑</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="range-filters">
+    <div class="range-group">
+      <label>Bandgap (eV)</label>
+      <div class="range-inputs">
+        <input type="number" id="bg-min" placeholder="min" step="0.1" min="0">
+        <span class="range-sep">—</span>
+        <input type="number" id="bg-max" placeholder="max" step="0.1" min="0">
+      </div>
+    </div>
+    <div class="range-group">
+      <label>Formation E (eV/atom)</label>
+      <div class="range-inputs">
+        <input type="number" id="ef-min" placeholder="min" step="0.1">
+        <span class="range-sep">—</span>
+        <input type="number" id="ef-max" placeholder="max" step="0.1">
+      </div>
+    </div>
+    <div class="range-group">
+      <label>Nsites</label>
+      <div class="range-inputs">
+        <input type="number" id="ns-min" placeholder="min" step="1" min="1">
+        <span class="range-sep">—</span>
+        <input type="number" id="ns-max" placeholder="max" step="1" min="1">
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat"><span class="stat-val" id="stat-total">—</span><span class="stat-lbl">Results</span></div>
+    <div class="stat"><span class="stat-val" id="stat-metals">—</span><span class="stat-lbl">Metals</span></div>
+    <div class="stat"><span class="stat-val" id="stat-sc">—</span><span class="stat-lbl">Semiconductors</span></div>
+    <div class="stat"><span class="stat-val" id="stat-ins">—</span><span class="stat-lbl">Insulators</span></div>
+    <div class="stat"><span class="stat-val" id="stat-avg-bg">—</span><span class="stat-lbl">Avg Bandgap</span></div>
+  </div>
+
+  <div id="periodic-table-section">
+    <div class="pt-header">
+      <span class="pt-title">Periodic Table — click an element to search</span>
+      <div class="pt-legend" id="pt-legend"></div>
+    </div>
+    <div class="pt-wrap">
+      <div class="periodic-table" id="periodic-table"></div>
+    </div>
+  </div>
+
+  <div class="results-header">
+    <span class="results-count" id="results-count"></span>
+  </div>
+
+  <div id="results-grid" style="display:none"></div>
+
+  <div class="pagination" id="pagination"></div>
+</main>
+
+<!-- Detail Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-inner">
+      <button class="modal-back" onclick="closeModalBtn()">← Back</button>
+      <div id="modal-content"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASE_URL = '/api';
+const PAGE_SIZE = 24;
+
+let allResults = [];
+let filteredResults = [];
+let currentPage = 1;
+let activeFilter = 'all';
+let currentSort = 'bandgap_asc';
+
+const apiStatus = document.getElementById('api-status');
+
+// --- Element name → symbol lookup ---
+const ELEMENT_NAMES = {
+  hydrogen:'H',helium:'He',lithium:'Li',beryllium:'Be',boron:'B',
+  carbon:'C',nitrogen:'N',oxygen:'O',fluorine:'F',neon:'Ne',
+  sodium:'Na',magnesium:'Mg',aluminum:'Al',aluminium:'Al',silicon:'Si',
+  phosphorus:'P',sulfur:'S',sulphur:'S',chlorine:'Cl',argon:'Ar',
+  potassium:'K',calcium:'Ca',scandium:'Sc',titanium:'Ti',vanadium:'V',
+  chromium:'Cr',manganese:'Mn',iron:'Fe',cobalt:'Co',nickel:'Ni',
+  copper:'Cu',zinc:'Zn',gallium:'Ga',germanium:'Ge',arsenic:'As',
+  selenium:'Se',bromine:'Br',krypton:'Kr',rubidium:'Rb',strontium:'Sr',
+  yttrium:'Y',zirconium:'Zr',niobium:'Nb',molybdenum:'Mo',technetium:'Tc',
+  ruthenium:'Ru',rhodium:'Rh',palladium:'Pd',silver:'Ag',cadmium:'Cd',
+  indium:'In',tin:'Sn',antimony:'Sb',tellurium:'Te',iodine:'I',
+  xenon:'Xe',cesium:'Cs',barium:'Ba',lanthanum:'La',cerium:'Ce',
+  praseodymium:'Pr',neodymium:'Nd',promethium:'Pm',samarium:'Sm',
+  europium:'Eu',gadolinium:'Gd',terbium:'Tb',dysprosium:'Dy',
+  holmium:'Ho',erbium:'Er',thulium:'Tm',ytterbium:'Yb',lutetium:'Lu',
+  hafnium:'Hf',tantalum:'Ta',tungsten:'W',rhenium:'Re',osmium:'Os',
+  iridium:'Ir',platinum:'Pt',gold:'Au',mercury:'Hg',thallium:'Tl',
+  lead:'Pb',bismuth:'Bi',polonium:'Po',astatine:'At',radon:'Rn',
+  francium:'Fr',radium:'Ra',actinium:'Ac',thorium:'Th',protactinium:'Pa',
+  uranium:'U',neptunium:'Np',plutonium:'Pu'
+};
+
+function resolveElement(raw) {
+  const byName = ELEMENT_NAMES[raw.toLowerCase()];
+  if (byName) return byName;
+  // Normalize symbol casing: Fe, Si, C, etc.
+  return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+}
+
+// --- Search ---
+let debounceTimer = null;
+
+const inputEl = document.getElementById('element-input');
+
+inputEl.addEventListener('input', () => {
+  const val = inputEl.value.trim();
+  clearTimeout(debounceTimer);
+  if (!val) { resetState(); return; }
+  debounceTimer = setTimeout(() => doSearch(), 600);
+});
+
+inputEl.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { clearTimeout(debounceTimer); doSearch(); }
+});
+
+function resetState() {
+  allResults = [];
+  filteredResults = [];
+  currentPage = 1;
+  document.getElementById('stat-total').textContent = '—';
+  document.getElementById('stat-metals').textContent = '—';
+  document.getElementById('stat-sc').textContent = '—';
+  document.getElementById('stat-ins').textContent = '—';
+  document.getElementById('stat-avg-bg').textContent = '—';
+  document.getElementById('results-count').textContent = '';
+  document.getElementById('pagination').innerHTML = '';
+  const grid = document.getElementById('results-grid');
+  grid.innerHTML = '';
+  grid.style.display = 'none';
+  document.getElementById('periodic-table-section').style.display = '';
+}
+
+async function doSearch() {
+  const rawInput = document.getElementById('element-input').value.trim();
+  if (!rawInput) { resetState(); return; }
+
+  // Dash-separated input (e.g. "Fe-O", "Iron-Oxygen") → use chemsys for exact system
+  // Comma/space-separated or single element → use elements (contains)
+  const isDashSystem = /^[A-Za-z]+-[A-Za-z]/.test(rawInput) && !rawInput.includes(',');
+
+  let queryParam, queryValue;
+  if (isDashSystem) {
+    const parts = rawInput.split('-').map(t => resolveElement(t.trim())).filter(Boolean);
+    queryParam = 'chemsys';
+    queryValue = parts.join('-');
+  } else {
+    const parts = rawInput.split(/[,\s]+/).map(t => resolveElement(t.trim())).filter(Boolean);
+    queryParam = 'elements';
+    queryValue = parts.join(',');
+  }
+
+  showLoading();
+  document.getElementById('search-btn').disabled = true;
+
+  try {
+    const fields = 'material_id,formula_pretty,elements,nsites,band_gap,formation_energy_per_atom,is_stable,symmetry,density,volume,e_above_hull,efermi,theoretical,is_magnetic';
+    const url = `${BASE_URL}/materials/summary/?${queryParam}=${encodeURIComponent(queryValue)}&_fields=${encodeURIComponent(fields)}&_limit=200`;
+
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      throw new Error(`HTTP ${res.status} — ${errBody.slice(0, 300)}`);
+    }
+
+    const data = await res.json();
+    allResults = (data.data || data || []).map(normalise);
+
+    if (allResults.length === 0) {
+      showError(`No materials found for <strong>${escHtml(queryValue)}</strong>. Try a valid element symbol like <strong>Fe</strong>, <strong>Si</strong>, or a system like <strong>Fe-O</strong>.`);
+      return;
+    }
+
+    apiStatus.className = 'api-status active';
+    updateStats(allResults);
+    currentPage = 1;
+    applyFiltersAndSort();
+
+  } catch (err) {
+    console.error(err);
+    apiStatus.className = 'api-status error';
+    showError(`Could not fetch data.<br><br><code>${err.message}</code>`);
+  } finally {
+    document.getElementById('search-btn').disabled = false;
+  }
+}
+
+function normalise(m) {
+  // Determine type
+  const bg = m.band_gap ?? null;
+  let type = 'unknown';
+  if (bg !== null) {
+    if (bg === 0) type = 'metal';
+    else if (bg < 3.0) type = 'semiconductor';
+    else type = 'insulator';
+  }
+  return { ...m, _type: type };
+}
+
+function toggleSortMenu(e) {
+  e.stopPropagation();
+  document.getElementById('sort-select-wrap').classList.toggle('open');
+}
+
+function selectSortOpt(value, label, btn) {
+  currentSort = value;
+  document.getElementById('sort-label').textContent = label;
+  document.querySelectorAll('#sort-dropdown button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sort-select-wrap').classList.remove('open');
+  currentPage = 1;
+  applyFiltersAndSort();
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('sort-select-wrap')?.classList.remove('open');
+});
+
+// --- Filters & Sort ---
+function setFilter(filter, btn) {
+  activeFilter = filter;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  currentPage = 1;
+  applyFiltersAndSort();
+}
+
+function applyFiltersAndSort() {
+  let data = [...allResults];
+
+  // Type filter
+  if (activeFilter !== 'all') data = data.filter(m => m._type === activeFilter);
+
+  // Range filters
+  const bgMin = parseFloat(document.getElementById('bg-min').value);
+  const bgMax = parseFloat(document.getElementById('bg-max').value);
+  const efMin = parseFloat(document.getElementById('ef-min').value);
+  const efMax = parseFloat(document.getElementById('ef-max').value);
+  const nsMin = parseInt(document.getElementById('ns-min').value);
+  const nsMax = parseInt(document.getElementById('ns-max').value);
+
+  if (!isNaN(bgMin)) data = data.filter(m => (m.band_gap ?? 0) >= bgMin);
+  if (!isNaN(bgMax)) data = data.filter(m => (m.band_gap ?? 0) <= bgMax);
+  if (!isNaN(efMin)) data = data.filter(m => (m.formation_energy_per_atom ?? 0) >= efMin);
+  if (!isNaN(efMax)) data = data.filter(m => (m.formation_energy_per_atom ?? 0) <= efMax);
+  if (!isNaN(nsMin)) data = data.filter(m => (m.nsites ?? 0) >= nsMin);
+  if (!isNaN(nsMax)) data = data.filter(m => (m.nsites ?? 0) <= nsMax);
+
+  // Sort
+  const sort = currentSort;
+  if (sort === 'bandgap_asc') data.sort((a,b) => (a.band_gap??99) - (b.band_gap??99));
+  if (sort === 'bandgap_desc') data.sort((a,b) => (b.band_gap??-1) - (a.band_gap??-1));
+  if (sort === 'eform_asc') data.sort((a,b) => (a.formation_energy_per_atom??99) - (b.formation_energy_per_atom??99));
+  if (sort === 'eform_desc') data.sort((a,b) => (b.formation_energy_per_atom??99) - (a.formation_energy_per_atom??99));
+  if (sort === 'nsites_asc') data.sort((a,b) => (a.nsites??0) - (b.nsites??0));
+
+  filteredResults = data;
+  renderPage();
+  renderPagination();
+  document.getElementById('results-count').textContent = `Showing ${filteredResults.length} of ${allResults.length} materials`;
+}
+
+// Register range/filter inputs
+['bg-min','bg-max','ef-min','ef-max','ns-min','ns-max'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => { currentPage = 1; applyFiltersAndSort(); });
+});
+
+// --- Render ---
+function renderPage() {
+  const grid = document.getElementById('results-grid');
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const page = filteredResults.slice(start, start + PAGE_SIZE);
+
+  if (filteredResults.length === 0) {
+    grid.innerHTML = `<div class="state-msg"><div class="icon">🔬</div><p>No materials match your current filters.</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = page.map((m, i) => cardHTML(m, i)).join('');
+}
+
+function cardHTML(m, i) {
+  const bg = m.band_gap !== null && m.band_gap !== undefined ? m.band_gap.toFixed(3) + ' eV' : 'N/A';
+  const ef = m.formation_energy_per_atom !== null && m.formation_energy_per_atom !== undefined
+    ? m.formation_energy_per_atom.toFixed(3) + ' eV/atom' : 'N/A';
+  const dens = m.density !== null && m.density !== undefined ? m.density.toFixed(2) + ' g/cm³' : 'N/A';
+  const ns = m.nsites ?? 'N/A';
+  const typeClass = `type-${m._type}`;
+  const typeLabel = m._type.charAt(0).toUpperCase() + m._type.slice(1);
+
+  return `
+  <div class="card" style="animation-delay:${i * 0.03}s" onclick="openModal('${m.material_id}')">
+    <div class="card-header">
+      <span class="formula">${escHtml(m.formula_pretty || m.material_id)}</span>
+      <span class="material-type ${typeClass}">${typeLabel}</span>
+    </div>
+    <div class="mp-id">${m.material_id}</div>
+    <div class="props-grid">
+      <div class="prop">
+        <div class="prop-label">Bandgap</div>
+        <div class="prop-val highlight">${bg}</div>
+      </div>
+      <div class="prop">
+        <div class="prop-label">Formation E</div>
+        <div class="prop-val">${ef}</div>
+      </div>
+      <div class="prop">
+        <div class="prop-label">Density</div>
+        <div class="prop-val">${dens}</div>
+      </div>
+      <div class="prop">
+        <div class="prop-label">N Sites</div>
+        <div class="prop-val">${ns}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// --- Stats ---
+function updateStats(data) {
+  const metals = data.filter(m => m._type === 'metal').length;
+  const sc = data.filter(m => m._type === 'semiconductor').length;
+  const ins = data.filter(m => m._type === 'insulator').length;
+  const bgs = data.map(m => m.band_gap).filter(v => v !== null && v !== undefined && v > 0);
+  const avgBg = bgs.length ? (bgs.reduce((a,b)=>a+b,0)/bgs.length).toFixed(2) + ' eV' : '—';
+
+  document.getElementById('stat-total').textContent = data.length;
+  document.getElementById('stat-metals').textContent = metals;
+  document.getElementById('stat-sc').textContent = sc;
+  document.getElementById('stat-ins').textContent = ins;
+  document.getElementById('stat-avg-bg').textContent = avgBg;
+}
+
+// --- Pagination ---
+function renderPagination() {
+  const total = Math.ceil(filteredResults.length / PAGE_SIZE);
+  const pg = document.getElementById('pagination');
+  if (total <= 1) { pg.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>← Prev</button>`;
+  for (let i = 1; i <= total; i++) {
+    if (total > 10 && i > 3 && i < total - 2 && Math.abs(i - currentPage) > 1) {
+      if (i === 4 || i === total - 3) html += `<span style="color:var(--muted);padding:0 4px">…</span>`;
+      continue;
+    }
+    html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html += `<button class="page-btn" onclick="goPage(${currentPage+1})" ${currentPage===total?'disabled':''}>Next →</button>`;
+  pg.innerHTML = html;
+}
+
+function goPage(n) {
+  const total = Math.ceil(filteredResults.length / PAGE_SIZE);
+  if (n < 1 || n > total) return;
+  currentPage = n;
+  renderPage();
+  renderPagination();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// --- Modal ---
+function openModal(mid) {
+  const m = allResults.find(r => r.material_id === mid);
+  if (!m) return;
+
+  const bg = m.band_gap !== null && m.band_gap !== undefined ? m.band_gap.toFixed(4) + ' eV' : 'N/A';
+  const ef = m.formation_energy_per_atom !== null && m.formation_energy_per_atom !== undefined
+    ? m.formation_energy_per_atom.toFixed(4) + ' eV/atom' : 'N/A';
+  const dens = m.density !== null && m.density !== undefined ? m.density.toFixed(3) + ' g/cm³' : 'N/A';
+  const vol = m.volume !== null && m.volume !== undefined ? m.volume.toFixed(2) + ' Å³' : 'N/A';
+  const eah = m.e_above_hull !== null && m.e_above_hull !== undefined ? m.e_above_hull.toFixed(4) + ' eV/atom' : 'N/A';
+  const ef2 = m.efermi !== null && m.efermi !== undefined ? m.efermi.toFixed(3) + ' eV' : 'N/A';
+  const spacegroup = m.symmetry?.symbol ?? m.symmetry?.number ?? 'N/A';
+  const typeClass = `type-${m._type}`;
+  const typeLabel = m._type.charAt(0).toUpperCase() + m._type.slice(1);
+  const elemTags = (m.elements||[]).map(e => `<span class="element-tag">${escHtml(e)}</span>`).join('');
+  const mpUrl = `https://materialsproject.org/materials/${m.material_id}`;
+
+  document.getElementById('modal-content').innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:6px;">
+      <h2>${escHtml(m.formula_pretty || m.material_id)}</h2>
+      <span class="material-type ${typeClass}">${typeLabel}</span>
+    </div>
+    <div class="mp-id">${m.material_id} · <a href="${mpUrl}" target="_blank" style="color:var(--accent);text-decoration:none;">View on Materials Project ↗</a></div>
+
+    <div class="modal-section">
+      <h3>Elements</h3>
+      <div class="elements-list">${elemTags || '<span style="color:var(--muted)">N/A</span>'}</div>
+    </div>
+
+    <div class="modal-section">
+      <h3>Electronic Properties</h3>
+      <div class="modal-props">
+        <div class="modal-prop"><div class="prop-label">Band Gap</div><div class="prop-val highlight">${bg}</div></div>
+        <div class="modal-prop"><div class="prop-label">Fermi Energy</div><div class="prop-val">${ef2}</div></div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <h3>Thermodynamic Properties</h3>
+      <div class="modal-props">
+        <div class="modal-prop"><div class="prop-label">Formation Energy</div><div class="prop-val">${ef}</div></div>
+        <div class="modal-prop"><div class="prop-label">E Above Hull</div><div class="prop-val">${eah}</div></div>
+        <div class="modal-prop"><div class="prop-label">Is Stable</div><div class="prop-val">${m.is_stable ? '✓ Yes' : '✗ No'}</div></div>
+        <div class="modal-prop"><div class="prop-label">Theoretical</div><div class="prop-val">${m.theoretical ? 'Yes' : 'No'}</div></div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <h3>Structure</h3>
+      <div class="modal-props">
+        <div class="modal-prop"><div class="prop-label">N Sites</div><div class="prop-val">${m.nsites ?? 'N/A'}</div></div>
+        <div class="modal-prop"><div class="prop-label">Density</div><div class="prop-val">${dens}</div></div>
+        <div class="modal-prop"><div class="prop-label">Volume</div><div class="prop-val">${vol}</div></div>
+        <div class="modal-prop"><div class="prop-label">Space Group</div><div class="prop-val">${escHtml(String(spacegroup))}</div></div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <h3>Other</h3>
+      <div class="modal-props">
+        <div class="modal-prop"><div class="prop-label">Magnetic</div><div class="prop-val">${m.is_magnetic ? 'Yes' : 'No'}</div></div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModalBtn();
+}
+
+function closeModalBtn() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModalBtn(); });
+
+// --- Periodic Table ---
+const PT_CATEGORIES = {
+  'alkali':           { label: 'Alkali',         color: '#f72585' },
+  'alkaline-earth':   { label: 'Alkaline Earth', color: '#ff9a3c' },
+  'transition':       { label: 'Transition',     color: '#4cc9f0' },
+  'post-transition':  { label: 'Post-Transition',color: '#06d6a0' },
+  'metalloid':        { label: 'Metalloid',      color: '#c77dff' },
+  'nonmetal':         { label: 'Nonmetal',       color: '#7bc67e' },
+  'halogen':          { label: 'Halogen',        color: '#48cae4' },
+  'noble-gas':        { label: 'Noble Gas',      color: '#94a3b8' },
+  'lanthanide':       { label: 'Lanthanide',     color: '#ffd166' },
+  'actinide':         { label: 'Actinide',       color: '#f4a261' },
+};
+
+// [symbol, atomicNum, name, category, gridRow, gridCol]
+const PT_DATA = [
+  ['H',1,'Hydrogen','nonmetal',1,1],['He',2,'Helium','noble-gas',1,18],
+  ['Li',3,'Lithium','alkali',2,1],['Be',4,'Beryllium','alkaline-earth',2,2],
+  ['B',5,'Boron','metalloid',2,13],['C',6,'Carbon','nonmetal',2,14],
+  ['N',7,'Nitrogen','nonmetal',2,15],['O',8,'Oxygen','nonmetal',2,16],
+  ['F',9,'Fluorine','halogen',2,17],['Ne',10,'Neon','noble-gas',2,18],
+  ['Na',11,'Sodium','alkali',3,1],['Mg',12,'Magnesium','alkaline-earth',3,2],
+  ['Al',13,'Aluminum','post-transition',3,13],['Si',14,'Silicon','metalloid',3,14],
+  ['P',15,'Phosphorus','nonmetal',3,15],['S',16,'Sulfur','nonmetal',3,16],
+  ['Cl',17,'Chlorine','halogen',3,17],['Ar',18,'Argon','noble-gas',3,18],
+  ['K',19,'Potassium','alkali',4,1],['Ca',20,'Calcium','alkaline-earth',4,2],
+  ['Sc',21,'Scandium','transition',4,3],['Ti',22,'Titanium','transition',4,4],
+  ['V',23,'Vanadium','transition',4,5],['Cr',24,'Chromium','transition',4,6],
+  ['Mn',25,'Manganese','transition',4,7],['Fe',26,'Iron','transition',4,8],
+  ['Co',27,'Cobalt','transition',4,9],['Ni',28,'Nickel','transition',4,10],
+  ['Cu',29,'Copper','transition',4,11],['Zn',30,'Zinc','transition',4,12],
+  ['Ga',31,'Gallium','post-transition',4,13],['Ge',32,'Germanium','metalloid',4,14],
+  ['As',33,'Arsenic','metalloid',4,15],['Se',34,'Selenium','nonmetal',4,16],
+  ['Br',35,'Bromine','halogen',4,17],['Kr',36,'Krypton','noble-gas',4,18],
+  ['Rb',37,'Rubidium','alkali',5,1],['Sr',38,'Strontium','alkaline-earth',5,2],
+  ['Y',39,'Yttrium','transition',5,3],['Zr',40,'Zirconium','transition',5,4],
+  ['Nb',41,'Niobium','transition',5,5],['Mo',42,'Molybdenum','transition',5,6],
+  ['Tc',43,'Technetium','transition',5,7],['Ru',44,'Ruthenium','transition',5,8],
+  ['Rh',45,'Rhodium','transition',5,9],['Pd',46,'Palladium','transition',5,10],
+  ['Ag',47,'Silver','transition',5,11],['Cd',48,'Cadmium','transition',5,12],
+  ['In',49,'Indium','post-transition',5,13],['Sn',50,'Tin','post-transition',5,14],
+  ['Sb',51,'Antimony','metalloid',5,15],['Te',52,'Tellurium','metalloid',5,16],
+  ['I',53,'Iodine','halogen',5,17],['Xe',54,'Xenon','noble-gas',5,18],
+  ['Cs',55,'Cesium','alkali',6,1],['Ba',56,'Barium','alkaline-earth',6,2],
+  ['*',0,'57–71','lanthanide',6,3],
+  ['Hf',72,'Hafnium','transition',6,4],['Ta',73,'Tantalum','transition',6,5],
+  ['W',74,'Tungsten','transition',6,6],['Re',75,'Rhenium','transition',6,7],
+  ['Os',76,'Osmium','transition',6,8],['Ir',77,'Iridium','transition',6,9],
+  ['Pt',78,'Platinum','transition',6,10],['Au',79,'Gold','transition',6,11],
+  ['Hg',80,'Mercury','transition',6,12],['Tl',81,'Thallium','post-transition',6,13],
+  ['Pb',82,'Lead','post-transition',6,14],['Bi',83,'Bismuth','post-transition',6,15],
+  ['Po',84,'Polonium','metalloid',6,16],['At',85,'Astatine','halogen',6,17],
+  ['Rn',86,'Radon','noble-gas',6,18],
+  ['Fr',87,'Francium','alkali',7,1],['Ra',88,'Radium','alkaline-earth',7,2],
+  ['**',0,'89–103','actinide',7,3],
+  ['Rf',104,'Rutherfordium','transition',7,4],['Db',105,'Dubnium','transition',7,5],
+  ['Sg',106,'Seaborgium','transition',7,6],['Bh',107,'Bohrium','transition',7,7],
+  ['Hs',108,'Hassium','transition',7,8],['Mt',109,'Meitnerium','transition',7,9],
+  ['Ds',110,'Darmstadtium','transition',7,10],['Rg',111,'Roentgenium','transition',7,11],
+  ['Cn',112,'Copernicium','transition',7,12],['Nh',113,'Nihonium','post-transition',7,13],
+  ['Fl',114,'Flerovium','post-transition',7,14],['Mc',115,'Moscovium','post-transition',7,15],
+  ['Lv',116,'Livermorium','post-transition',7,16],['Ts',117,'Tennessine','halogen',7,17],
+  ['Og',118,'Oganesson','noble-gas',7,18],
+  // Lanthanides (row 9 = main row 7 + spacer row 8 + 1)
+  ['La',57,'Lanthanum','lanthanide',9,3],['Ce',58,'Cerium','lanthanide',9,4],
+  ['Pr',59,'Praseodymium','lanthanide',9,5],['Nd',60,'Neodymium','lanthanide',9,6],
+  ['Pm',61,'Promethium','lanthanide',9,7],['Sm',62,'Samarium','lanthanide',9,8],
+  ['Eu',63,'Europium','lanthanide',9,9],['Gd',64,'Gadolinium','lanthanide',9,10],
+  ['Tb',65,'Terbium','lanthanide',9,11],['Dy',66,'Dysprosium','lanthanide',9,12],
+  ['Ho',67,'Holmium','lanthanide',9,13],['Er',68,'Erbium','lanthanide',9,14],
+  ['Tm',69,'Thulium','lanthanide',9,15],['Yb',70,'Ytterbium','lanthanide',9,16],
+  ['Lu',71,'Lutetium','lanthanide',9,17],
+  // Actinides (row 10)
+  ['Ac',89,'Actinium','actinide',10,3],['Th',90,'Thorium','actinide',10,4],
+  ['Pa',91,'Protactinium','actinide',10,5],['U',92,'Uranium','actinide',10,6],
+  ['Np',93,'Neptunium','actinide',10,7],['Pu',94,'Plutonium','actinide',10,8],
+  ['Am',95,'Americium','actinide',10,9],['Cm',96,'Curium','actinide',10,10],
+  ['Bk',97,'Berkelium','actinide',10,11],['Cf',98,'Californium','actinide',10,12],
+  ['Es',99,'Einsteinium','actinide',10,13],['Fm',100,'Fermium','actinide',10,14],
+  ['Md',101,'Mendelevium','actinide',10,15],['No',102,'Nobelium','actinide',10,16],
+  ['Lr',103,'Lawrencium','actinide',10,17],
+];
+
+function buildPeriodicTable() {
+  const legend = document.getElementById('pt-legend');
+  legend.innerHTML = Object.entries(PT_CATEGORIES).map(([, v]) =>
+    `<div class="pt-legend-item">
+      <div class="pt-legend-dot" style="background:${v.color}"></div>
+      <span>${v.label}</span>
+    </div>`
+  ).join('');
+
+  const table = document.getElementById('periodic-table');
+  table.innerHTML = PT_DATA.map(([sym, num, name, cat, row, col]) => {
+    const isPlaceholder = num === 0;
+    if (isPlaceholder) {
+      return `<div class="pt-cell pt-${cat} pt-placeholder" style="grid-column:${col};grid-row:${row};">
+        <span>${name}</span>
+      </div>`;
+    }
+    return `<div class="pt-cell pt-${cat}" style="grid-column:${col};grid-row:${row};"
+        onclick="clickElement('${sym}')" title="${name} (${sym}, Z=${num})">
+      <span class="pt-num">${num}</span>
+      <span class="pt-sym">${sym}</span>
+      <span class="pt-name">${name}</span>
+    </div>`;
+  }).join('');
+}
+
+function clickElement(symbol) {
+  clearTimeout(debounceTimer);
+  document.getElementById('element-input').value = symbol;
+  doSearch();
+}
+
+function goRandomMaterial() {
+  const common = PT_DATA.filter(([, num]) => num > 0 && num <= 86);
+  const count = Math.random() < 0.55 ? 2 : 3;
+  const shuffled = [...common].sort(() => Math.random() - 0.5);
+  const syms = shuffled.slice(0, count).map(([sym]) => sym).sort();
+  const chemsys = syms.join('-');
+  document.getElementById('element-input').value = chemsys;
+  doSearch();
+}
+
+buildPeriodicTable();
+
+// --- Helpers ---
+function showLoading() {
+  document.getElementById('periodic-table-section').style.display = 'none';
+  const grid = document.getElementById('results-grid');
+  grid.style.display = '';
+  grid.innerHTML = `
+    <div class="loader active">
+      <div class="spinner"></div>
+      <div class="loader-text">Querying Materials Project…</div>
+    </div>`;
+  document.getElementById('pagination').innerHTML = '';
+  document.getElementById('results-count').textContent = '';
+}
+
+function showError(msg) {
+  document.getElementById('periodic-table-section').style.display = 'none';
+  const grid = document.getElementById('results-grid');
+  grid.style.display = '';
+  grid.innerHTML = `
+    <div class="state-msg">
+      <div class="icon">⚠</div>
+      <p>${msg}</p>
+    </div>`;
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
+
+
+
+
+
+
