@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Materials Explorer</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #07071a;
@@ -33,35 +33,145 @@
   body {
     background: var(--bg);
     color: var(--text);
-    font-family: 'Syne', sans-serif;
+    font-family: 'Fredoka', sans-serif;
+    font-weight: 500;
     min-height: 100vh;
     overflow-x: hidden;
   }
 
-  body::before {
-    content: '';
+  body::before, body::after { display: none; }
+
+  /* ── Background scene ── */
+  .bg-scene {
     position: fixed;
-    width: 800px; height: 800px;
-    top: -350px; left: -250px;
-    background: radial-gradient(circle, rgba(247,37,133,0.09) 0%, transparent 65%);
-    pointer-events: none;
+    inset: 0;
     z-index: 0;
-    animation: orb1 22s ease-in-out infinite;
+    overflow: hidden;
+    pointer-events: none;
   }
 
-  body::after {
+  /* Star field */
+  .bg-stars {
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at  4%  9%, rgba(255,255,255,0.75) 0%, transparent 100%),
+      radial-gradient(1px 1px at 11% 24%, rgba(255,255,255,0.50) 0%, transparent 100%),
+      radial-gradient(1px 1px at 18% 67%, rgba(255,255,255,0.65) 0%, transparent 100%),
+      radial-gradient(1px 1px at 26% 14%, rgba(255,255,255,0.45) 0%, transparent 100%),
+      radial-gradient(1px 1px at 33% 82%, rgba(255,255,255,0.70) 0%, transparent 100%),
+      radial-gradient(1px 1px at 41% 38%, rgba(255,255,255,0.40) 0%, transparent 100%),
+      radial-gradient(1px 1px at 47% 56%, rgba(255,255,255,0.60) 0%, transparent 100%),
+      radial-gradient(1px 1px at 55%  7%, rgba(255,255,255,0.55) 0%, transparent 100%),
+      radial-gradient(1px 1px at 62% 73%, rgba(255,255,255,0.45) 0%, transparent 100%),
+      radial-gradient(1px 1px at 70% 29%, rgba(255,255,255,0.70) 0%, transparent 100%),
+      radial-gradient(1px 1px at 77% 91%, rgba(255,255,255,0.40) 0%, transparent 100%),
+      radial-gradient(1px 1px at 84% 47%, rgba(255,255,255,0.65) 0%, transparent 100%),
+      radial-gradient(1px 1px at 91% 18%, rgba(255,255,255,0.50) 0%, transparent 100%),
+      radial-gradient(1px 1px at 97% 62%, rgba(255,255,255,0.60) 0%, transparent 100%),
+      radial-gradient(1px 1px at  7% 52%, rgba(255,255,255,0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 14% 88%, rgba(255,255,255,0.55) 0%, transparent 100%),
+      radial-gradient(1px 1px at 22% 33%, rgba(255,255,255,0.45) 0%, transparent 100%),
+      radial-gradient(1px 1px at 29%  3%, rgba(255,255,255,0.70) 0%, transparent 100%),
+      radial-gradient(1px 1px at 36% 71%, rgba(255,255,255,0.40) 0%, transparent 100%),
+      radial-gradient(1px 1px at 44% 19%, rgba(255,255,255,0.60) 0%, transparent 100%),
+      radial-gradient(1px 1px at 51% 94%, rgba(255,255,255,0.35) 0%, transparent 100%),
+      radial-gradient(1px 1px at 58% 44%, rgba(255,255,255,0.65) 0%, transparent 100%),
+      radial-gradient(1px 1px at 66% 11%, rgba(255,255,255,0.50) 0%, transparent 100%),
+      radial-gradient(1px 1px at 73% 59%, rgba(255,255,255,0.45) 0%, transparent 100%),
+      radial-gradient(1px 1px at 80% 77%, rgba(255,255,255,0.70) 0%, transparent 100%),
+      radial-gradient(1px 1px at 88% 36%, rgba(255,255,255,0.40) 0%, transparent 100%),
+      radial-gradient(1px 1px at 94% 85%, rgba(255,255,255,0.55) 0%, transparent 100%),
+      radial-gradient(2px 2px at 16% 42%, rgba(255,255,255,0.55) 0%, transparent 100%),
+      radial-gradient(2px 2px at 38% 61%, rgba(255,255,255,0.45) 0%, transparent 100%),
+      radial-gradient(2px 2px at 59% 22%, rgba(255,255,255,0.60) 0%, transparent 100%),
+      radial-gradient(2px 2px at 82% 64%, rgba(255,255,255,0.50) 0%, transparent 100%),
+      radial-gradient(2px 2px at  2% 78%, rgba(255,255,255,0.65) 0%, transparent 100%),
+      radial-gradient(2px 2px at 49% 31%, rgba(255,255,255,0.40) 0%, transparent 100%),
+      radial-gradient(2px 2px at 71% 96%, rgba(255,255,255,0.55) 0%, transparent 100%);
+    animation: stars-drift 120s linear infinite;
+  }
+  @keyframes stars-drift {
+    from { transform: translateY(0); }
+    to   { transform: translateY(-8px); }
+  }
+
+  /* Twinkling overlay */
+  .bg-stars::after {
     content: '';
-    position: fixed;
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(1px 1px at 20% 50%, rgba(255,255,255,0.8) 0%, transparent 100%),
+      radial-gradient(1px 1px at 45% 15%, rgba(200,220,255,0.7) 0%, transparent 100%),
+      radial-gradient(1px 1px at 67% 80%, rgba(255,255,255,0.6) 0%, transparent 100%),
+      radial-gradient(1px 1px at 85% 25%, rgba(200,240,255,0.8) 0%, transparent 100%),
+      radial-gradient(1px 1px at  9% 65%, rgba(255,255,255,0.7) 0%, transparent 100%),
+      radial-gradient(2px 2px at 52% 48%, rgba(255,255,255,0.5) 0%, transparent 100%),
+      radial-gradient(2px 2px at 76% 12%, rgba(200,220,255,0.6) 0%, transparent 100%);
+    animation: star-twinkle 7s ease-in-out infinite alternate;
+  }
+  @keyframes star-twinkle {
+    0%   { opacity: 0.5; }
+    50%  { opacity: 1;   }
+    100% { opacity: 0.3; }
+  }
+
+  /* Nebula orbs */
+  .bg-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(88px);
+    mix-blend-mode: screen;
+  }
+  .bo1 {
+    width: 820px; height: 820px;
+    background: radial-gradient(circle at 40% 35%, rgba(247,37,133,0.48) 0%, rgba(114,9,183,0.22) 55%, transparent 72%);
+    top: -18%; left: -12%;
+    opacity: 0.30;
+    animation: bo-drift-1 34s ease-in-out infinite alternate;
+  }
+  .bo2 {
     width: 700px; height: 700px;
-    bottom: -250px; right: -200px;
-    background: radial-gradient(circle, rgba(76,201,240,0.08) 0%, transparent 65%);
-    pointer-events: none;
-    z-index: 0;
-    animation: orb2 28s ease-in-out infinite;
+    background: radial-gradient(circle at 55% 45%, rgba(76,201,240,0.50) 0%, rgba(67,97,238,0.25) 55%, transparent 72%);
+    bottom: -14%; right: -10%;
+    opacity: 0.26;
+    animation: bo-drift-2 40s ease-in-out infinite alternate;
+  }
+  .bo3 {
+    width: 560px; height: 560px;
+    background: radial-gradient(circle at 50% 50%, rgba(114,9,183,0.55) 0%, rgba(58,12,163,0.25) 55%, transparent 72%);
+    top: 32%; left: 28%;
+    opacity: 0.20;
+    animation: bo-drift-3 26s ease-in-out infinite alternate;
+  }
+  .bo4 {
+    width: 440px; height: 440px;
+    background: radial-gradient(circle at 45% 40%, rgba(6,214,160,0.50) 0%, rgba(76,201,240,0.20) 55%, transparent 72%);
+    top: 10%; right: 18%;
+    opacity: 0.18;
+    animation: bo-drift-4 31s ease-in-out infinite alternate;
+  }
+  .bo5 {
+    width: 380px; height: 380px;
+    background: radial-gradient(circle at 50% 45%, rgba(255,209,102,0.45) 0%, rgba(247,37,133,0.20) 55%, transparent 72%);
+    bottom: 22%; left: 12%;
+    opacity: 0.15;
+    animation: bo-drift-5 22s ease-in-out infinite alternate;
   }
 
-  @keyframes orb1 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(70px,50px)} }
-  @keyframes orb2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(-60px,-40px)} }
+  @keyframes bo-drift-1 { 0%{transform:translate(0,0) scale(1)}   50%{transform:translate(80px,55px)  scale(1.07)} 100%{transform:translate(-45px,90px) scale(0.96)} }
+  @keyframes bo-drift-2 { 0%{transform:translate(0,0) scale(1)}   50%{transform:translate(-65px,-55px) scale(1.06)} 100%{transform:translate(50px,-80px) scale(1.03)} }
+  @keyframes bo-drift-3 { 0%{transform:translate(0,0) scale(1)}   50%{transform:translate(110px,-70px) scale(0.94)} 100%{transform:translate(-55px,55px) scale(1.08)} }
+  @keyframes bo-drift-4 { 0%{transform:translate(0,0) scale(1)}   50%{transform:translate(-45px,80px)  scale(1.10)} 100%{transform:translate(75px,-35px) scale(0.95)} }
+  @keyframes bo-drift-5 { 0%{transform:translate(0,0) scale(1)}   50%{transform:translate(55px,-65px)  scale(1.05)} 100%{transform:translate(-80px,45px) scale(0.97)} }
+
+  /* Vignette to darken edges and make cards pop */
+  .bg-vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(4,4,18,0.75) 100%);
+  }
 
   header {
     position: relative;
@@ -168,7 +278,7 @@
     color: #fff;
     border: none;
     border-radius: var(--radius-pill);
-    font-family: 'Syne', sans-serif;
+    font-family: 'Fredoka', sans-serif;
     font-weight: 700;
     font-size: 14px;
     padding: 14px 32px;
@@ -476,6 +586,34 @@
   }
   .modal-back:hover { color: var(--pink2); border-color: rgba(247,37,133,0.4); background: rgba(247,37,133,0.08); }
 
+  /* ── Modal action buttons ── */
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+
+  .modal-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 9px 18px;
+    cursor: pointer;
+    transition: var(--t);
+    letter-spacing: 0.05em;
+  }
+  .modal-action-btn:hover { background: var(--surface3); border-color: rgba(247,37,133,0.4); color: var(--pink2); }
+  .modal-action-btn.fav-active { color: var(--gold); border-color: rgba(255,209,102,0.45); background: rgba(255,209,102,0.08); }
+  .modal-action-btn.fav-active svg { fill: var(--gold); }
+  .modal-action-btn.cmp-active { color: var(--blue); border-color: rgba(76,201,240,0.45); background: rgba(76,201,240,0.08); }
+
   .modal-inner::-webkit-scrollbar { width: 5px; }
   .modal-inner::-webkit-scrollbar-track { background: transparent; }
   .modal-inner::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
@@ -624,6 +762,126 @@
 
   .results-header { display: flex; align-items: center; margin-bottom: 18px; gap: 12px; flex-wrap: wrap; }
   .results-count { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); }
+
+  /* ── Scroll progress bar ── */
+  #scroll-progress-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.04);
+    z-index: 999;
+    pointer-events: none;
+  }
+  #scroll-progress {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--pink), var(--blue2), var(--blue));
+    box-shadow: 0 0 10px rgba(247,37,133,0.55), 0 0 20px rgba(76,201,240,0.3);
+    transition: width 0.08s linear;
+    border-radius: 0 2px 2px 0;
+  }
+
+  /* ── Custom scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--pink) 0%, var(--blue2) 60%, var(--blue) 100%);
+    border-radius: 99px;
+    box-shadow: 0 0 6px rgba(247,37,133,0.35);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, var(--pink2) 0%, var(--blue) 100%);
+    box-shadow: 0 0 12px rgba(247,37,133,0.55);
+  }
+  * { scrollbar-width: thin; scrollbar-color: var(--pink) rgba(255,255,255,0.04); }
+
+  /* ── Header center ── */
+  .header-center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    padding: 0 32px;
+  }
+  .header-tagline {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .header-chips {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .header-chip {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 13px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    white-space: nowrap;
+  }
+  .header-chip.chip-pink  { border-color: rgba(247,37,133,0.25); color: var(--pink2);  background: rgba(247,37,133,0.07); }
+  .header-chip.chip-blue  { border-color: rgba(76,201,240,0.25);  color: var(--blue);   background: rgba(76,201,240,0.07);  }
+  .header-chip.chip-gold  { border-color: rgba(255,209,102,0.25); color: var(--gold);   background: rgba(255,209,102,0.07); }
+
+  /* ── Header status block ── */
+  .header-status {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .header-status-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .header-status-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .header-links {
+    display: flex;
+    gap: 6px;
+  }
+  .header-link-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 12px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: var(--t);
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+  }
+  .header-link-btn:hover { color: var(--blue); border-color: rgba(76,201,240,0.35); background: rgba(76,201,240,0.07); }
+
+  @media (max-width: 900px) { .header-center { display: none; } }
 
   @media (max-width: 600px) {
     header { padding: 24px 20px 20px; }
@@ -858,7 +1116,7 @@
     color: var(--text);
     font-weight: 700;
     font-size: 13px;
-    font-family: 'Syne', sans-serif;
+    font-family: 'Fredoka', sans-serif;
     white-space: nowrap;
   }
   .compare-tbl th.prop-col {
@@ -1007,7 +1265,7 @@
   .pt-cell.pt-placeholder:hover { filter: none; transform: none; box-shadow: none; }
 
   .pt-num  { font-family: 'Space Mono', monospace; font-size: 6.5px; opacity: 0.6; }
-  .pt-sym  { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 800; line-height: 1.1; }
+  .pt-sym  { font-family: 'Fredoka', sans-serif; font-size: 13px; font-weight: 800; line-height: 1.1; }
   .pt-name { font-family: 'Space Mono', monospace; font-size: 5.5px; opacity: 0.55; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 2px; }
 
   .pt-alkali          { --el-color:#f72585; --el-bg:rgba(247,37,133,0.1);  --el-border:rgba(247,37,133,0.3);  }
@@ -1020,21 +1278,332 @@
   .pt-noble-gas       { --el-color:#94a3b8; --el-bg:rgba(148,163,184,0.07);--el-border:rgba(148,163,184,0.2); }
   .pt-lanthanide      { --el-color:#ffd166; --el-bg:rgba(255,209,102,0.1); --el-border:rgba(255,209,102,0.28);}
   .pt-actinide        { --el-color:#f4a261; --el-bg:rgba(244,162,97,0.1);  --el-border:rgba(244,162,97,0.28); }
+
+  /* ══════════════════════════════════════════════════
+     LIQUID GLASS — Apple-style translucent surfaces
+     ══════════════════════════════════════════════════ */
+
+  :root {
+    --lg-fill:        rgba(255,255,255,0.055);
+    --lg-fill2:       rgba(255,255,255,0.09);
+    --lg-fill3:       rgba(255,255,255,0.13);
+    --lg-border:      rgba(255,255,255,0.14);
+    --lg-highlight:   rgba(255,255,255,0.22);
+    --lg-blur:        blur(28px) saturate(1.8) brightness(1.04);
+    --lg-blur-heavy:  blur(44px) saturate(2)   brightness(1.06);
+    --lg-shadow:      0 8px 32px rgba(0,0,0,0.3),  inset 0 1px 0 var(--lg-highlight);
+    --lg-shadow-lg:   0 24px 64px rgba(0,0,0,0.45), inset 0 1px 0 var(--lg-highlight);
+  }
+
+  /* Subtle light-sweep shimmer — uses transform so it's fully GPU-composited */
+  @keyframes lg-sweep {
+    0%   { transform: translateX(-180%); }
+    100% { transform: translateX(180%); }
+  }
+
+  /* ── Header ── */
+  header {
+    background: rgba(7,7,26,0.38) !important;
+    backdrop-filter: var(--lg-blur-heavy);
+    -webkit-backdrop-filter: var(--lg-blur-heavy);
+    border-bottom-color: var(--lg-border) !important;
+    box-shadow: 0 1px 0 var(--lg-highlight), 0 8px 40px rgba(0,0,0,0.2);
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    background: rgba(10,10,32,0.48) !important;
+    backdrop-filter: var(--lg-blur-heavy) !important;
+    -webkit-backdrop-filter: var(--lg-blur-heavy) !important;
+    border-right: 1px solid var(--lg-border);
+    box-shadow: 2px 0 24px rgba(0,0,0,0.2), inset -1px 0 0 var(--lg-highlight);
+  }
+
+  /* ── Search input ── */
+  input[type="text"] {
+    background: var(--lg-fill) !important;
+    border-color: var(--lg-border) !important;
+    backdrop-filter: blur(12px) saturate(1.5);
+    -webkit-backdrop-filter: blur(12px) saturate(1.5);
+    box-shadow: inset 0 1px 0 var(--lg-highlight);
+  }
+  input[type="text"]:focus {
+    background: var(--lg-fill2) !important;
+    border-color: rgba(247,37,133,0.45) !important;
+    box-shadow: 0 0 0 3px rgba(247,37,133,0.1), inset 0 1px 0 rgba(255,255,255,0.12) !important;
+  }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--lg-fill) !important;
+    border-color: var(--lg-border) !important;
+    backdrop-filter: var(--lg-blur);
+    -webkit-backdrop-filter: var(--lg-blur);
+    box-shadow: var(--lg-shadow) !important;
+    overflow: hidden;
+    contain: layout style;
+    transition: transform var(--t), box-shadow var(--t), border-color var(--t), background var(--t), filter var(--t);
+  }
+
+  #results-grid {
+    transform: translateZ(0);
+    will-change: scroll-position;
+  }
+  .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      transparent            0%,
+      transparent           36%,
+      rgba(255,255,255,0.00) 43%,
+      rgba(255,255,255,0.04) 48%,
+      rgba(255,255,255,0.055) 50%,
+      rgba(255,255,255,0.04) 52%,
+      rgba(255,255,255,0.00) 57%,
+      transparent           64%,
+      transparent          100%
+    );
+    animation: lg-sweep var(--sweep-dur, 22s) ease-in-out var(--sweep-delay, 0s) infinite;
+    opacity: 0.55;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.55s ease;
+    will-change: transform;
+  }
+  .card:hover {
+    background: rgba(76,201,240,0.09) !important;
+    border-color: rgba(76,201,240,0.55) !important;
+    box-shadow:
+      0 0 0 1px rgba(76,201,240,0.28),
+      0 6px 28px rgba(76,201,240,0.22),
+      0 20px 56px rgba(0,0,0,0.4),
+      inset 0 1px 0 rgba(76,201,240,0.35) !important;
+    filter: brightness(1.22) saturate(1.35);
+    transform: translateY(-4px) !important;
+    transition: transform 1.1s ease, box-shadow 1.1s ease, border-color 1.1s ease, background 1.1s ease, filter 1.1s ease !important;
+  }
+  .card:hover::after { opacity: 0; }
+
+  /* ── Prop tiles inside cards ── */
+  .prop {
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.07);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+  .card:hover .prop { background: rgba(255,255,255,0.07) !important; }
+
+  /* ── Filter chips ── */
+  .filter-chip {
+    background: var(--lg-fill) !important;
+    border-color: var(--lg-border) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .filter-chip:hover {
+    background: rgba(247,37,133,0.08) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 0 16px rgba(247,37,133,0.1);
+  }
+  .filter-chip.active {
+    background: rgba(247,37,133,0.1) !important;
+    border-color: rgba(247,37,133,0.4) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.15), 0 4px 20px rgba(247,37,133,0.18) !important;
+  }
+
+  /* ── Range filter groups ── */
+  .range-group {
+    background: var(--lg-fill) !important;
+    border-color: var(--lg-border) !important;
+    backdrop-filter: blur(16px) saturate(1.6);
+    -webkit-backdrop-filter: blur(16px) saturate(1.6);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .range-group:hover {
+    border-color: rgba(76,201,240,0.3) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1), 0 0 20px rgba(76,201,240,0.08) !important;
+  }
+  .range-group input[type="number"] {
+    background: rgba(255,255,255,0.05) !important;
+    border-color: rgba(255,255,255,0.09) !important;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+  .range-group input[type="number"]:focus {
+    background: rgba(76,201,240,0.06) !important;
+    box-shadow: 0 0 0 2px rgba(76,201,240,0.12), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+  }
+
+  /* ── Sort button & dropdown ── */
+  .sort-select-btn {
+    background: var(--lg-fill) !important;
+    border-color: var(--lg-border) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .sort-select-btn:hover, .sort-select-wrap.open .sort-select-btn {
+    background: var(--lg-fill2) !important;
+    box-shadow: inset 0 1px 0 rgba(76,201,240,0.2), 0 0 20px rgba(76,201,240,0.08) !important;
+  }
+  .sort-dropdown-menu {
+    background: rgba(8,8,30,0.82) !important;
+    backdrop-filter: blur(32px) saturate(2) !important;
+    -webkit-backdrop-filter: blur(32px) saturate(2) !important;
+    border-color: var(--lg-border) !important;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.55), inset 0 1px 0 var(--lg-highlight) !important;
+  }
+
+  /* ── Detail modal ── */
+  .modal {
+    background: rgba(9,9,28,0.65) !important;
+    border-color: var(--lg-border) !important;
+    backdrop-filter: var(--lg-blur-heavy) !important;
+    -webkit-backdrop-filter: var(--lg-blur-heavy) !important;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), inset 0 1px 0 var(--lg-highlight) !important;
+  }
+  .modal-prop {
+    background: rgba(255,255,255,0.04) !important;
+    border-color: rgba(255,255,255,0.08) !important;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.07);
+  }
+  .modal-prop:hover { background: rgba(255,255,255,0.08) !important; }
+  .modal-back, .modal-action-btn {
+    background: var(--lg-fill) !important;
+    border-color: var(--lg-border) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.12);
+  }
+  .modal-action-btn.fav-active {
+    background: rgba(255,209,102,0.1) !important;
+    box-shadow: inset 0 1px 0 rgba(255,209,102,0.2), 0 0 20px rgba(255,209,102,0.1) !important;
+  }
+  .modal-action-btn.cmp-active {
+    background: rgba(76,201,240,0.1) !important;
+    box-shadow: inset 0 1px 0 rgba(76,201,240,0.2), 0 0 20px rgba(76,201,240,0.1) !important;
+  }
+
+  /* ── Panel modals (favorites, compare) ── */
+  .panel-box {
+    background: rgba(9,9,28,0.65) !important;
+    border-color: var(--lg-border) !important;
+    backdrop-filter: var(--lg-blur-heavy) !important;
+    -webkit-backdrop-filter: var(--lg-blur-heavy) !important;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), inset 0 1px 0 var(--lg-highlight) !important;
+  }
+  .panel-close, .compare-clear-btn {
+    background: var(--lg-fill) !important;
+    border-color: var(--lg-border) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .compare-tbl th       { background: rgba(255,255,255,0.05) !important; }
+  .compare-tbl th.prop-col { background: rgba(255,255,255,0.03) !important; }
+  .compare-tbl td       { background: rgba(255,255,255,0.025) !important; }
+  .compare-tbl td:hover { background: rgba(255,255,255,0.06) !important; }
+
+  /* ── Pagination buttons ── */
+  .page-btn {
+    background: var(--lg-fill) !important;
+    border-color: var(--lg-border) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.09);
+  }
+  .page-btn:hover {
+    background: rgba(247,37,133,0.08) !important;
+    box-shadow: inset 0 1px 0 rgba(247,37,133,0.15), 0 0 16px rgba(247,37,133,0.1) !important;
+  }
+  .page-btn.active {
+    box-shadow: 0 4px 20px rgba(247,37,133,0.35), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+  }
+
+  /* ── Periodic table cells ── */
+  .pt-cell {
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+  .pt-cell:hover {
+    box-shadow: 0 4px 18px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+  }
+
+  /* ── Element tags in modal ── */
+  .element-tag {
+    backdrop-filter: blur(8px);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  /* ── Export toast ── */
+  .export-toast {
+    backdrop-filter: blur(20px) saturate(1.8);
+    box-shadow: inset 0 1px 0 rgba(6,214,160,0.2), 0 8px 32px rgba(0,0,0,0.3);
+  }
+
 </style>
 </head>
 <body>
 
+<div id="scroll-progress-bar"><div id="scroll-progress"></div></div>
+
+<div class="bg-scene" aria-hidden="true">
+  <div class="bg-stars"></div>
+  <div class="bg-orb bo1"></div>
+  <div class="bg-orb bo2"></div>
+  <div class="bg-orb bo3"></div>
+  <div class="bg-orb bo4"></div>
+  <div class="bg-orb bo5"></div>
+  <div class="bg-vignette"></div>
+</div>
+
 <aside class="sidebar">
   <button class="sb-btn" onclick="goRandomMaterial()" title="Random Material">
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-      <rect x="2" y="2" width="20" height="20" rx="5"/>
-      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/>
-      <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/>
-      <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" stroke="none"/>
-      <circle cx="8.5" cy="15.5" r="1.5" fill="currentColor" stroke="none"/>
-      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
-    </svg>
+    <div class="sb-icon-wrap">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="2" y="2" width="20" height="20" rx="5"/>
+        <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/>
+        <circle cx="15.5" cy="8.5" r="1.5" fill="currentColor" stroke="none"/>
+        <circle cx="15.5" cy="15.5" r="1.5" fill="currentColor" stroke="none"/>
+        <circle cx="8.5" cy="15.5" r="1.5" fill="currentColor" stroke="none"/>
+        <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
     <span class="sb-label">Random</span>
+  </button>
+  <div class="sb-divider"></div>
+  <button class="sb-btn" onclick="openFavoritesModal()" title="Favorites">
+    <div class="sb-icon-wrap">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+      <span class="sb-badge" id="fav-badge">0</span>
+    </div>
+    <span class="sb-label">Favorites</span>
+  </button>
+  <button class="sb-btn" onclick="exportCSV()" title="Export CSV">
+    <div class="sb-icon-wrap">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+    </div>
+    <span class="sb-label">Export CSV</span>
+  </button>
+  <button class="sb-btn" id="compare-sb-btn" onclick="openCompareModal()" title="Compare">
+    <div class="sb-icon-wrap">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <rect x="2" y="3" width="9" height="18" rx="2"/>
+        <rect x="13" y="3" width="9" height="18" rx="2"/>
+      </svg>
+      <span class="sb-badge" id="compare-badge">0</span>
+    </div>
+    <span class="sb-label">Compare</span>
   </button>
 </aside>
 
@@ -1043,9 +1612,31 @@
     <span class="eyebrow">Materials Project API</span>
     <h1>Materials Explorer</h1>
   </div>
-  <div style="display:flex;align-items:center;gap:8px;">
-    <div class="api-status" id="api-status"></div>
-    <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;">Connected</span>
+
+  <div class="header-center">
+    <span class="header-tagline">Search, filter &amp; compare computed materials</span>
+    <div class="header-chips">
+      <span class="header-chip chip-pink">Crystalline Solids</span>
+      <span class="header-chip chip-blue">DFT Computed</span>
+      <span class="header-chip chip-gold">Open Database</span>
+    </div>
+  </div>
+
+  <div class="header-status">
+    <div class="header-links">
+      <a class="header-link-btn" href="https://materialsproject.org" target="_blank">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        Materials Project
+      </a>
+      <a class="header-link-btn" href="https://api.materialsproject.org" target="_blank">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+        API Docs
+      </a>
+    </div>
+    <div class="header-status-row">
+      <div class="api-status" id="api-status"></div>
+      <span class="header-status-label">Connected</span>
+    </div>
   </div>
 </header>
 
@@ -1147,6 +1738,34 @@
     </div>
   </div>
 </div>
+
+<!-- Favorites Modal -->
+<div class="panel-modal" id="fav-modal" onclick="closePanelModal('fav-modal',event)">
+  <div class="panel-box panel-wide">
+    <div class="panel-header">
+      <span class="panel-title">Favorites</span>
+      <button class="panel-close" onclick="closeFavModal()">Close ✕</button>
+    </div>
+    <div class="panel-body" id="fav-modal-body"></div>
+  </div>
+</div>
+
+<!-- Compare Modal -->
+<div class="panel-modal" id="compare-modal" onclick="closePanelModal('compare-modal',event)">
+  <div class="panel-box panel-wide">
+    <div class="panel-header">
+      <span class="panel-title">Compare Materials</span>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <button class="compare-clear-btn" style="margin:0" onclick="clearCompare()">Clear All</button>
+        <button class="panel-close" onclick="document.getElementById('compare-modal').classList.remove('open')">Close ✕</button>
+      </div>
+    </div>
+    <div class="panel-body" id="compare-modal-body"></div>
+  </div>
+</div>
+
+<!-- Export toast -->
+<div class="export-toast" id="export-toast">CSV downloaded</div>
 
 <script>
 const BASE_URL = '/api';
@@ -1382,11 +2001,21 @@ function cardHTML(m, i) {
   const typeClass = `type-${m._type}`;
   const typeLabel = m._type.charAt(0).toUpperCase() + m._type.slice(1);
 
+  const isFav = favorites.has(m.material_id);
+  const isCmp = compareSet.has(m.material_id);
+
   return `
-  <div class="card" style="animation-delay:${i * 0.03}s" onclick="openModal('${m.material_id}')">
+  <div class="card${isCmp ? ' compare-selected' : ''}" data-mid="${m.material_id}" style="animation-delay:${i * 0.03}s;--sweep-delay:${(-(Math.random()*12)).toFixed(2)}s;--sweep-dur:${(20+Math.random()*12).toFixed(1)}s" onclick="openModal('${m.material_id}')">
     <div class="card-header">
       <span class="formula">${escHtml(m.formula_pretty || m.material_id)}</span>
-      <span class="material-type ${typeClass}">${typeLabel}</span>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;">
+        <button class="card-star${isFav ? ' fav-active' : ''}" onclick="toggleFavorite(event,'${m.material_id}')" title="Favorite">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </button>
+        <span class="material-type ${typeClass}">${typeLabel}</span>
+      </div>
     </div>
     <div class="mp-id">${m.material_id}</div>
     <div class="props-grid">
@@ -1406,6 +2035,12 @@ function cardHTML(m, i) {
         <div class="prop-label">N Sites</div>
         <div class="prop-val">${ns}</div>
       </div>
+    </div>
+    <div class="card-compare-row" onclick="event.stopPropagation()">
+      <label class="compare-cb-wrap">
+        <input type="checkbox" class="compare-cb" ${isCmp ? 'checked' : ''} onchange="toggleCompare(event,'${m.material_id}')">
+        <span class="compare-cb-lbl">Compare</span>
+      </label>
     </div>
   </div>`;
 }
@@ -1454,7 +2089,7 @@ function goPage(n) {
 
 // --- Modal ---
 function openModal(mid) {
-  const m = allResults.find(r => r.material_id === mid);
+  const m = allResults.find(r => r.material_id === mid) || favoriteData[mid];
   if (!m) return;
 
   const bg = m.band_gap !== null && m.band_gap !== undefined ? m.band_gap.toFixed(4) + ' eV' : 'N/A';
@@ -1470,12 +2105,29 @@ function openModal(mid) {
   const elemTags = (m.elements||[]).map(e => `<span class="element-tag">${escHtml(e)}</span>`).join('');
   const mpUrl = `https://materialsproject.org/materials/${m.material_id}`;
 
+  const isFav = favorites.has(m.material_id);
+  const isCmp = compareSet.has(m.material_id);
+
   document.getElementById('modal-content').innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:6px;">
       <h2>${escHtml(m.formula_pretty || m.material_id)}</h2>
       <span class="material-type ${typeClass}">${typeLabel}</span>
     </div>
     <div class="mp-id">${m.material_id} · <a href="${mpUrl}" target="_blank" style="color:var(--accent);text-decoration:none;">View on Materials Project ↗</a></div>
+    <div class="modal-actions">
+      <button class="modal-action-btn${isFav ? ' fav-active' : ''}" id="modal-fav-btn" onclick="toggleFavoriteFromModal('${m.material_id}')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        <span id="modal-fav-label">${isFav ? 'Unfavorite' : 'Favorite'}</span>
+      </button>
+      <button class="modal-action-btn${isCmp ? ' cmp-active' : ''}" id="modal-cmp-btn" onclick="toggleCompareFromModal('${m.material_id}')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="3" width="9" height="18" rx="2"/><rect x="13" y="3" width="9" height="18" rx="2"/>
+        </svg>
+        <span id="modal-cmp-label">${isCmp ? 'Remove from Compare' : 'Add to Compare'}</span>
+      </button>
+    </div>
 
     <div class="modal-section">
       <h3>Elements</h3>
@@ -1686,6 +2338,254 @@ function showError(msg) {
 function escHtml(str) {
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+
+// ─── Favorites ────────────────────────────────────────────
+let favorites = new Set(JSON.parse(localStorage.getItem('mp_fav_ids') || '[]'));
+let favoriteData = JSON.parse(localStorage.getItem('mp_fav_data') || '{}');
+
+function saveFavorites() {
+  localStorage.setItem('mp_fav_ids', JSON.stringify([...favorites]));
+  localStorage.setItem('mp_fav_data', JSON.stringify(favoriteData));
+  updateFavBadge();
+}
+
+function updateFavBadge() {
+  const badge = document.getElementById('fav-badge');
+  const n = favorites.size;
+  badge.textContent = n;
+  badge.style.display = n > 0 ? 'flex' : 'none';
+}
+
+function toggleFavorite(e, mid) {
+  e.stopPropagation();
+  if (favorites.has(mid)) {
+    favorites.delete(mid);
+    delete favoriteData[mid];
+  } else {
+    favorites.add(mid);
+    const m = allResults.find(r => r.material_id === mid) || favoriteData[mid];
+    if (m) favoriteData[mid] = m;
+  }
+  saveFavorites();
+  const isFav = favorites.has(mid);
+  document.querySelectorAll(`.card[data-mid="${mid}"] .card-star`).forEach(btn => {
+    btn.classList.toggle('fav-active', isFav);
+    btn.querySelector('svg').setAttribute('fill', isFav ? 'currentColor' : 'none');
+  });
+}
+
+function openFavoritesModal() {
+  const items = Object.values(favoriteData);
+  const body = document.getElementById('fav-modal-body');
+  if (items.length === 0) {
+    body.innerHTML = `<div class="state-msg" style="padding:40px 0">
+      <div class="icon">⭐</div>
+      <p>No favorites yet. Click the star on any material card to save it here.</p>
+    </div>`;
+  } else {
+    body.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+      ${items.map((m, i) => cardHTML(m, i)).join('')}
+    </div>`;
+  }
+  document.getElementById('fav-modal').classList.add('open');
+}
+
+function closeFavModal() {
+  document.getElementById('fav-modal').classList.remove('open');
+}
+
+// ─── Export CSV ───────────────────────────────────────────
+function exportCSV() {
+  if (filteredResults.length === 0) return;
+  if (!confirm(`Export ${filteredResults.length} material${filteredResults.length !== 1 ? 's' : ''} as CSV?`)) return;
+  const headers = ['material_id','formula','type','band_gap_eV','formation_energy_eV_atom','density_g_cm3','nsites','is_stable','elements'];
+  const rows = filteredResults.map(m => [
+    m.material_id,
+    m.formula_pretty || '',
+    m._type,
+    m.band_gap ?? '',
+    m.formation_energy_per_atom ?? '',
+    m.density ?? '',
+    m.nsites ?? '',
+    m.is_stable ? 'true' : 'false',
+    (m.elements || []).join(';')
+  ]);
+  const csv = [headers, ...rows]
+    .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(','))
+    .join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `materials_export_${Date.now()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV downloaded');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('export-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ─── Compare ─────────────────────────────────────────────
+let compareSet = new Set();
+
+function toggleCompare(e, mid) {
+  e.stopPropagation();
+  if (compareSet.has(mid)) {
+    compareSet.delete(mid);
+  } else {
+    if (compareSet.size >= 3) {
+      showToast('Max 3 materials for compare');
+      e.currentTarget.checked = false;
+      return;
+    }
+    compareSet.add(mid);
+  }
+  const card = document.querySelector(`.card[data-mid="${mid}"]`);
+  if (card) card.classList.toggle('compare-selected', compareSet.has(mid));
+  updateCompareBadge();
+}
+
+function updateCompareBadge() {
+  const badge = document.getElementById('compare-badge');
+  const n = compareSet.size;
+  badge.textContent = n;
+  badge.style.display = n > 0 ? 'flex' : 'none';
+  document.getElementById('compare-sb-btn').classList.toggle('sb-active', n > 0);
+}
+
+function clearCompare() {
+  compareSet.clear();
+  document.querySelectorAll('.card.compare-selected').forEach(c => {
+    c.classList.remove('compare-selected');
+    const cb = c.querySelector('.compare-cb');
+    if (cb) cb.checked = false;
+  });
+  updateCompareBadge();
+  document.getElementById('compare-modal').classList.remove('open');
+}
+
+function openCompareModal() {
+  const body = document.getElementById('compare-modal-body');
+  if (compareSet.size < 2) {
+    body.innerHTML = `<div class="compare-hint">Select 2 or 3 materials using the <strong>Compare</strong> checkbox on each card, then click Compare again.</div>`;
+    document.getElementById('compare-modal').classList.add('open');
+    return;
+  }
+  const items = [...compareSet]
+    .map(mid => allResults.find(r => r.material_id === mid) || favoriteData[mid])
+    .filter(Boolean);
+
+  const fmt = (v, suffix='') => (v !== null && v !== undefined) ? v + suffix : '—';
+
+  const rows = [
+    ['Formula',        m => escHtml(m.formula_pretty || m.material_id)],
+    ['ID',             m => m.material_id],
+    ['Type',           m => `<span class="material-type type-${m._type}" style="font-size:10px;padding:3px 10px">${m._type}</span>`],
+    ['Band Gap',       m => fmt(m.band_gap?.toFixed(3), ' eV'), true],
+    ['Formation E',    m => fmt(m.formation_energy_per_atom?.toFixed(3), ' eV/atom')],
+    ['E Above Hull',   m => fmt(m.e_above_hull?.toFixed(4), ' eV/atom')],
+    ['Density',        m => fmt(m.density?.toFixed(2), ' g/cm³')],
+    ['N Sites',        m => fmt(m.nsites)],
+    ['Space Group',    m => escHtml(String(m.symmetry?.symbol ?? m.symmetry?.number ?? '—'))],
+    ['Stable',         m => m.is_stable ? '✓ Yes' : '✗ No'],
+    ['Magnetic',       m => m.is_magnetic ? 'Yes' : 'No'],
+    ['Elements',       m => (m.elements || []).join(', ')],
+  ];
+
+  const headerCells = items.map(m =>
+    `<th>${escHtml(m.formula_pretty || m.material_id)}<br>
+     <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);font-weight:400">${m.material_id}</span></th>`
+  ).join('');
+
+  const bodyRows = rows.map(([label, fn, highlight]) =>
+    `<tr>
+      <th class="prop-col">${label}</th>
+      ${items.map(m => `<td class="${highlight ? 'val-hi' : ''}">${fn(m)}</td>`).join('')}
+    </tr>`
+  ).join('');
+
+  body.innerHTML = `
+    <div class="compare-wrap">
+      <table class="compare-tbl">
+        <thead><tr><th class="prop-col"></th>${headerCells}</tr></thead>
+        <tbody>${bodyRows}</tbody>
+      </table>
+    </div>`;
+  document.getElementById('compare-modal').classList.add('open');
+}
+
+// ─── Modal favorite / compare toggles ────────────────────
+function toggleFavoriteFromModal(mid) {
+  if (favorites.has(mid)) {
+    favorites.delete(mid);
+    delete favoriteData[mid];
+  } else {
+    favorites.add(mid);
+    const m = allResults.find(r => r.material_id === mid) || favoriteData[mid];
+    if (m) favoriteData[mid] = m;
+  }
+  saveFavorites();
+  const isFav = favorites.has(mid);
+  const btn = document.getElementById('modal-fav-btn');
+  if (btn) {
+    btn.classList.toggle('fav-active', isFav);
+    btn.querySelector('svg').setAttribute('fill', isFav ? 'currentColor' : 'none');
+    document.getElementById('modal-fav-label').textContent = isFav ? 'Unfavorite' : 'Favorite';
+  }
+  document.querySelectorAll(`.card[data-mid="${mid}"] .card-star`).forEach(s => {
+    s.classList.toggle('fav-active', isFav);
+    s.querySelector('svg').setAttribute('fill', isFav ? 'currentColor' : 'none');
+  });
+}
+
+function toggleCompareFromModal(mid) {
+  const btn = document.getElementById('modal-cmp-btn');
+  if (compareSet.has(mid)) {
+    compareSet.delete(mid);
+  } else {
+    if (compareSet.size >= 3) { showToast('Max 3 materials for compare'); return; }
+    compareSet.add(mid);
+  }
+  updateCompareBadge();
+  const isCmp = compareSet.has(mid);
+  if (btn) {
+    btn.classList.toggle('cmp-active', isCmp);
+    document.getElementById('modal-cmp-label').textContent = isCmp ? 'Remove from Compare' : 'Add to Compare';
+  }
+  const card = document.querySelector(`.card[data-mid="${mid}"]`);
+  if (card) {
+    card.classList.toggle('compare-selected', isCmp);
+    const cb = card.querySelector('.compare-cb');
+    if (cb) cb.checked = isCmp;
+  }
+}
+
+// ─── Shared panel close on backdrop click ─────────────────
+function closePanelModal(id, e) {
+  if (e.target === document.getElementById(id)) {
+    document.getElementById(id).classList.remove('open');
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['fav-modal','compare-modal'].forEach(id => document.getElementById(id).classList.remove('open'));
+  }
+});
+
+updateFavBadge();
+
+// ─── Scroll progress bar ──────────────────────────────────
+const scrollProgress = document.getElementById('scroll-progress');
+window.addEventListener('scroll', () => {
+  const total = document.body.scrollHeight - window.innerHeight;
+  scrollProgress.style.width = total > 0 ? (window.scrollY / total * 100) + '%' : '0%';
+}, { passive: true });
 </script>
 </body>
 </html>
