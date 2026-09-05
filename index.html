@@ -11,16 +11,6 @@
 
 <div id="scroll-progress-bar"><div id="scroll-progress"></div></div>
 
-<div class="bg-scene" aria-hidden="true">
-  <div class="bg-stars"></div>
-  <div class="bg-orb bo1"></div>
-  <div class="bg-orb bo2"></div>
-  <div class="bg-orb bo3"></div>
-  <div class="bg-orb bo4"></div>
-  <div class="bg-orb bo5"></div>
-  <div class="bg-vignette"></div>
-</div>
-
 <aside class="sidebar">
   <button class="sb-btn" onclick="goRandomMaterial()" title="Random Material">
     <div class="sb-icon-wrap">
@@ -67,127 +57,312 @@
   </button>
 </aside>
 
-<header>
-  <div class="header-title">
-    <span class="eyebrow">Materials Project API</span>
-    <h1>Materials Explorer</h1>
+<!-- ── Top Nav ── -->
+<nav class="topnav">
+  <div class="nav-brand">
+    <div class="logo-mark">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+        <circle cx="12" cy="12" r="2.4" fill="#fff" stroke="none"/>
+        <ellipse cx="12" cy="12" rx="10" ry="4.2"/>
+        <ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"/>
+        <ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"/>
+      </svg>
+    </div>
+    <span class="nav-brand-name">Materials Explorer</span>
+  </div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#action">Live Demo</a>
+    <a href="https://api.materialsproject.org" target="_blank" rel="noopener">API Docs</a>
+  </div>
+  <div class="nav-actions">
+    <a class="btn-outline btn-sm" href="https://materialsproject.org" target="_blank" rel="noopener">Materials Project ↗</a>
+    <button class="btn-primary btn-sm" onclick="scrollToApp()">Start Exploring</button>
+  </div>
+</nav>
+
+<!-- ── Hero ── -->
+<header class="hero">
+  <span class="hero-badge">⚡ Powered by the Materials Project API</span>
+  <h1>Explore Every<br><span class="accent">Known Material</span></h1>
+  <p class="hero-sub">Search, filter, and compare 150,000+ DFT-computed crystalline solids &mdash; free, open, no login required.</p>
+  <div class="hero-ctas">
+    <button class="btn-primary btn-lg" onclick="scrollToApp()">
+      Start Exploring
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+    <a class="btn-outline btn-lg" href="https://api.materialsproject.org" target="_blank" rel="noopener">View API Docs</a>
   </div>
 
-  <div class="header-center">
-    <span class="header-tagline">Search, filter &amp; compare computed materials</span>
-    <div class="header-chips">
-      <span class="header-chip chip-pink">Crystalline Solids</span>
-      <span class="header-chip chip-blue">DFT Computed</span>
-      <span class="header-chip chip-gold">Open Database</span>
+  <!-- Live preview card = the real, working app -->
+  <div class="preview-card" id="app">
+    <div class="preview-card-header">
+      <div class="preview-card-id">
+        <div class="logo-mark logo-mark-sm">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+            <circle cx="12" cy="12" r="2.4" fill="#fff" stroke="none"/>
+            <ellipse cx="12" cy="12" rx="10" ry="4.2"/>
+            <ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"/>
+            <ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"/>
+          </svg>
+        </div>
+        <span class="preview-card-name">Materials Explorer &mdash; Live</span>
+      </div>
+      <div class="header-status-row">
+        <div class="api-status" id="api-status"></div>
+        <span class="header-status-label">Connected</span>
+      </div>
     </div>
-  </div>
 
-  <div class="header-status">
-    <div class="header-links">
-      <a class="header-link-btn" href="https://materialsproject.org" target="_blank">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-        Materials Project
-      </a>
-      <a class="header-link-btn" href="https://api.materialsproject.org" target="_blank">
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-        API Docs
-      </a>
-    </div>
-    <div class="header-status-row">
-      <div class="api-status" id="api-status"></div>
-      <span class="header-status-label">Connected</span>
+    <div class="preview-card-body">
+      <div class="search-bar">
+        <div class="search-input-wrap">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          <input type="text" id="element-input" placeholder="e.g. Fe, Iron, Fe-O, Iron-Oxygen, Si-C …">
+        </div>
+        <button class="search-btn" id="search-btn" onclick="doSearch()">Search</button>
+      </div>
+
+      <div class="filters">
+        <span class="filter-label">Type</span>
+        <button class="filter-chip active" data-filter="all" onclick="setFilter('all',this)">All</button>
+        <button class="filter-chip" data-filter="metal" onclick="setFilter('metal',this)">Metal</button>
+        <button class="filter-chip" data-filter="semiconductor" onclick="setFilter('semiconductor',this)">Semiconductor</button>
+        <button class="filter-chip" data-filter="insulator" onclick="setFilter('insulator',this)">Insulator</button>
+        <div class="sort-wrap">
+          <span class="filter-label">Sort</span>
+          <div class="sort-select-wrap" id="sort-select-wrap">
+            <button class="sort-select-btn" onclick="toggleSortMenu(event)">
+              <span id="sort-label">Bandgap ↑</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="sort-dropdown-menu" id="sort-dropdown">
+              <button class="active" onclick="selectSortOpt('bandgap_asc','Bandgap ↑',this)">Bandgap ↑</button>
+              <button onclick="selectSortOpt('bandgap_desc','Bandgap ↓',this)">Bandgap ↓</button>
+              <button onclick="selectSortOpt('eform_asc','Formation E ↑',this)">Formation E ↑</button>
+              <button onclick="selectSortOpt('eform_desc','Formation E ↓',this)">Formation E ↓</button>
+              <button onclick="selectSortOpt('nsites_asc','Sites ↑',this)">Sites ↑</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="range-filters">
+        <div class="range-group">
+          <label>Bandgap (eV)</label>
+          <div class="range-inputs">
+            <input type="number" id="bg-min" placeholder="min" step="0.1" min="0">
+            <span class="range-sep">—</span>
+            <input type="number" id="bg-max" placeholder="max" step="0.1" min="0">
+          </div>
+        </div>
+        <div class="range-group">
+          <label>Formation E (eV/atom)</label>
+          <div class="range-inputs">
+            <input type="number" id="ef-min" placeholder="min" step="0.1">
+            <span class="range-sep">—</span>
+            <input type="number" id="ef-max" placeholder="max" step="0.1">
+          </div>
+        </div>
+        <div class="range-group">
+          <label>Nsites</label>
+          <div class="range-inputs">
+            <input type="number" id="ns-min" placeholder="min" step="1" min="1">
+            <span class="range-sep">—</span>
+            <input type="number" id="ns-max" placeholder="max" step="1" min="1">
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat"><span class="stat-val" id="stat-total">—</span><span class="stat-lbl">Results</span></div>
+        <div class="stat"><span class="stat-val" id="stat-metals">—</span><span class="stat-lbl">Metals</span></div>
+        <div class="stat"><span class="stat-val" id="stat-sc">—</span><span class="stat-lbl">Semiconductors</span></div>
+        <div class="stat"><span class="stat-val" id="stat-ins">—</span><span class="stat-lbl">Insulators</span></div>
+        <div class="stat"><span class="stat-val" id="stat-avg-bg">—</span><span class="stat-lbl">Avg Bandgap</span></div>
+      </div>
+
+      <div id="periodic-table-section">
+        <div class="pt-header">
+          <span class="pt-title">Periodic Table — click an element to search</span>
+          <div class="pt-legend" id="pt-legend"></div>
+        </div>
+        <div class="pt-wrap">
+          <div class="periodic-table" id="periodic-table"></div>
+        </div>
+      </div>
+
+      <div class="results-header">
+        <span class="results-count" id="results-count"></span>
+      </div>
+
+      <div id="results-grid" style="display:none"></div>
+
+      <div class="pagination" id="pagination"></div>
     </div>
   </div>
 </header>
 
 <main>
-  <div class="search-bar">
-    <div class="search-input-wrap">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-      </svg>
-      <input type="text" id="element-input" placeholder="e.g. Fe, Iron, Fe-O, Iron-Oxygen, Si-C …">
-    </div>
-    <button class="search-btn" id="search-btn" onclick="doSearch()">Search</button>
-  </div>
 
-  <div class="filters">
-    <span class="filter-label">Type</span>
-    <button class="filter-chip active" data-filter="all" onclick="setFilter('all',this)">All</button>
-    <button class="filter-chip" data-filter="metal" onclick="setFilter('metal',this)">Metal</button>
-    <button class="filter-chip" data-filter="semiconductor" onclick="setFilter('semiconductor',this)">Semiconductor</button>
-    <button class="filter-chip" data-filter="insulator" onclick="setFilter('insulator',this)">Insulator</button>
-    <div class="sort-wrap">
-      <span class="filter-label">Sort</span>
-      <div class="sort-select-wrap" id="sort-select-wrap">
-        <button class="sort-select-btn" onclick="toggleSortMenu(event)">
-          <span id="sort-label">Bandgap ↑</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="sort-dropdown-menu" id="sort-dropdown">
-          <button class="active" onclick="selectSortOpt('bandgap_asc','Bandgap ↑',this)">Bandgap ↑</button>
-          <button onclick="selectSortOpt('bandgap_desc','Bandgap ↓',this)">Bandgap ↓</button>
-          <button onclick="selectSortOpt('eform_asc','Formation E ↑',this)">Formation E ↑</button>
-          <button onclick="selectSortOpt('eform_desc','Formation E ↓',this)">Formation E ↓</button>
-          <button onclick="selectSortOpt('nsites_asc','Sites ↑',this)">Sites ↑</button>
+  <!-- ── Feature cards ── -->
+  <section class="features" id="features">
+    <div class="section-head">
+      <h2>Built for <span class="accent">Materials Research</span></h2>
+      <p class="section-sub">Everything you need to go from a formula to a full property breakdown — no setup required.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="m2 17 10 5 10-5"/><path d="m2 12 10 5 10-5"/>
+          </svg>
         </div>
+        <h3>Massive Database</h3>
+        <p>Search over 150,000 DFT-computed crystalline structures sourced directly from the Materials Project.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="currentColor" stroke="none"/>
+            <line x1="4" y1="12" x2="20" y2="12"/><circle cx="16" cy="12" r="2" fill="currentColor" stroke="none"/>
+            <line x1="4" y1="18" x2="20" y2="18"/><circle cx="10" cy="18" r="2" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
+        <h3>Powerful Filtering</h3>
+        <p>Narrow results by band gap, formation energy, site count, and material type in real time.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/>
+            <ellipse cx="12" cy="12" rx="10" ry="4.2"/>
+            <ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(60 12 12)"/>
+            <ellipse cx="12" cy="12" rx="10" ry="4.2" transform="rotate(120 12 12)"/>
+          </svg>
+        </div>
+        <h3>Deep Structure Data</h3>
+        <p>Inspect symmetry, density, volume, stability, and magnetism for every material.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <h3>Favorites</h3>
+        <p>Save materials you care about — stored locally in your browser, ready whenever you return.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="2" y="3" width="9" height="18" rx="2"/><rect x="13" y="3" width="9" height="18" rx="2"/>
+          </svg>
+        </div>
+        <h3>Side-by-Side Compare</h3>
+        <p>Compare up to 3 materials across every computed property in one table.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+        <h3>CSV Export</h3>
+        <p>Export your filtered results as CSV for further analysis in your own tools.</p>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="range-filters">
-    <div class="range-group">
-      <label>Bandgap (eV)</label>
-      <div class="range-inputs">
-        <input type="number" id="bg-min" placeholder="min" step="0.1" min="0">
-        <span class="range-sep">—</span>
-        <input type="number" id="bg-max" placeholder="max" step="0.1" min="0">
+  <!-- ── See it in action ── -->
+  <section class="action-section" id="action">
+    <div class="section-head">
+      <h2>See It In <span class="accent">Action</span></h2>
+      <p class="section-sub">These tabs are wired to the live app above — run a search up top, then flip through them.</p>
+    </div>
+    <div class="action-tabs">
+      <button class="tab-btn active" data-tab="search" onclick="switchActionTab('search',this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Search
+      </button>
+      <button class="tab-btn" data-tab="compare" onclick="switchActionTab('compare',this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="9" height="18" rx="2"/><rect x="13" y="3" width="9" height="18" rx="2"/></svg>
+        Compare
+      </button>
+      <button class="tab-btn" data-tab="export" onclick="switchActionTab('export',this)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Export
+      </button>
+    </div>
+
+    <div class="action-panel">
+      <div class="action-view" id="action-search">
+        <div class="action-stat-row">
+          <div class="action-stat"><span id="action-total">—</span><label>Results Loaded</label></div>
+          <div class="action-stat"><span id="action-metals">—</span><label>Metals</label></div>
+          <div class="action-stat"><span id="action-sc">—</span><label>Semiconductors</label></div>
+          <div class="action-stat"><span id="action-ins">—</span><label>Insulators</label></div>
+        </div>
+        <p class="action-hint" id="action-search-hint">Search an element above to populate live results, then scroll down to browse them.</p>
+        <button class="btn-outline" onclick="scrollToApp()">Jump to Search ↑</button>
+      </div>
+
+      <div class="action-view" id="action-compare" hidden>
+        <div class="action-compare-list" id="action-compare-list"></div>
+        <button class="btn-primary" onclick="openCompareModal()">Open Compare</button>
+      </div>
+
+      <div class="action-view" id="action-export" hidden>
+        <p class="action-hint" id="action-export-hint">0 materials ready to export.</p>
+        <button class="btn-primary" onclick="exportCSV()">Export CSV</button>
       </div>
     </div>
-    <div class="range-group">
-      <label>Formation E (eV/atom)</label>
-      <div class="range-inputs">
-        <input type="number" id="ef-min" placeholder="min" step="0.1">
-        <span class="range-sep">—</span>
-        <input type="number" id="ef-max" placeholder="max" step="0.1">
+  </section>
+
+  <!-- ── Integrations ── -->
+  <section class="integrations">
+    <div class="section-head">
+      <h2>Works With Your <span class="accent">Tools</span></h2>
+      <p class="section-sub">Built on the same open data ecosystem researchers already use.</p>
+    </div>
+    <div class="logo-grid">
+      <div class="logo-chip"><span class="logo-sq" style="background:#6d5ef8">MP</span>Materials Project</div>
+      <div class="logo-chip"><span class="logo-sq" style="background:#16a34a">Py</span>pymatgen</div>
+      <div class="logo-chip"><span class="logo-sq" style="background:#ea580c">AS</span>ASE</div>
+      <div class="logo-chip"><span class="logo-sq" style="background:#0f172a">V</span>VASP</div>
+      <div class="logo-chip"><span class="logo-sq" style="background:#dc2626">QE</span>Quantum ESPRESSO</div>
+      <div class="logo-chip"><span class="logo-sq" style="background:#0891b2">OQ</span>OQMD</div>
+      <div class="logo-chip"><span class="logo-sq" style="background:#64748b">{ }</span>JSON</div>
+      <div class="logo-chip"><span class="logo-sq" style="background:#334155">CSV</span>CSV</div>
+    </div>
+
+    <div class="code-card">
+      <div class="code-card-header">
+        <span class="code-card-dots"><i class="cd-r"></i><i class="cd-y"></i><i class="cd-g"></i></span>
+        <span class="code-card-name">api-example.js</span>
+        <button class="code-copy-btn" onclick="copyCodeSnippet(this)">Copy</button>
       </div>
+      <pre class="code-card-body" id="api-code-snippet">// Materials Explorer &mdash; fetch example
+const res = await fetch(
+  '/api/materials/summary/?elements=Fe,O&_fields=material_id,band_gap,formula_pretty&_limit=50'
+);
+const { data } = await res.json();
+
+data.forEach(m => {
+  console.log(`${m.formula_pretty}: ${m.band_gap} eV`);
+});</pre>
     </div>
-    <div class="range-group">
-      <label>Nsites</label>
-      <div class="range-inputs">
-        <input type="number" id="ns-min" placeholder="min" step="1" min="1">
-        <span class="range-sep">—</span>
-        <input type="number" id="ns-max" placeholder="max" step="1" min="1">
-      </div>
-    </div>
-  </div>
+  </section>
 
-  <div class="stats-bar">
-    <div class="stat"><span class="stat-val" id="stat-total">—</span><span class="stat-lbl">Results</span></div>
-    <div class="stat"><span class="stat-val" id="stat-metals">—</span><span class="stat-lbl">Metals</span></div>
-    <div class="stat"><span class="stat-val" id="stat-sc">—</span><span class="stat-lbl">Semiconductors</span></div>
-    <div class="stat"><span class="stat-val" id="stat-ins">—</span><span class="stat-lbl">Insulators</span></div>
-    <div class="stat"><span class="stat-val" id="stat-avg-bg">—</span><span class="stat-lbl">Avg Bandgap</span></div>
-  </div>
-
-  <div id="periodic-table-section">
-    <div class="pt-header">
-      <span class="pt-title">Periodic Table — click an element to search</span>
-      <div class="pt-legend" id="pt-legend"></div>
-    </div>
-    <div class="pt-wrap">
-      <div class="periodic-table" id="periodic-table"></div>
-    </div>
-  </div>
-
-  <div class="results-header">
-    <span class="results-count" id="results-count"></span>
-  </div>
-
-  <div id="results-grid" style="display:none"></div>
-
-  <div class="pagination" id="pagination"></div>
 </main>
+
+<footer class="site-footer">
+  <span>Materials data provided by the <a href="https://materialsproject.org" target="_blank" rel="noopener">Materials Project</a> API. Independent explorer, not affiliated with Materials Project.</span>
+  <a href="https://api.materialsproject.org" target="_blank" rel="noopener">API Docs ↗</a>
+</footer>
 
 <!-- Detail Modal -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">

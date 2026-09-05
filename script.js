@@ -33,11 +33,32 @@ const ELEMENT_NAMES = {
   uranium:'U',neptunium:'Np',plutonium:'Pu'
 };
 
+const VALID_SYMBOLS = new Set(Object.values(ELEMENT_NAMES));
+
 function resolveElement(raw) {
   const byName = ELEMENT_NAMES[raw.toLowerCase()];
   if (byName) return byName;
   // Normalize symbol casing: Fe, Si, C, etc.
   return raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+}
+
+// Turns a formula typed in any casing (ch4, Fe2O3, nacl) into proper
+// element-symbol casing (CH4, Fe2O3, NaCl) by greedily matching the
+// longest valid element symbol at each position.
+function normalizeFormula(raw) {
+  let out = '';
+  let i = 0;
+  while (i < raw.length) {
+    const ch = raw[i];
+    if (/[0-9.]/.test(ch)) { out += ch; i++; continue; }
+    const two = raw.slice(i, i + 2);
+    const twoCap = /^[A-Za-z]{2}$/.test(two) ? two[0].toUpperCase() + two[1].toLowerCase() : null;
+    if (twoCap && VALID_SYMBOLS.has(twoCap)) { out += twoCap; i += 2; continue; }
+    const oneCap = ch.toUpperCase();
+    if (VALID_SYMBOLS.has(oneCap)) { out += oneCap; i += 1; continue; }
+    out += ch; i++; // unrecognized char — pass through as-is
+  }
+  return out;
 }
 
 // --- Search ---
@@ -71,6 +92,71 @@ function resetState() {
   grid.innerHTML = '';
   grid.style.display = 'none';
   document.getElementById('periodic-table-section').style.display = '';
+  renderActionPanels();
+}
+
+// ─── Hero / nav helpers ────────────────────────────────────
+function scrollToApp() {
+  document.getElementById('app').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setTimeout(() => document.getElementById('element-input')?.focus(), 400);
+}
+
+function copyCodeSnippet(btn) {
+  const code = document.getElementById('api-code-snippet').textContent;
+  const done = () => {
+    const original = btn.textContent;
+    btn.textContent = 'Copied!';
+    setTimeout(() => { btn.textContent = original; }, 1500);
+  };
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(code).then(done).catch(done);
+  } else {
+    done();
+  }
+}
+
+// ─── "See It In Action" tabs — mirrors live app state ──────
+function switchActionTab(name, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  ['search', 'compare', 'export'].forEach(n => {
+    const panel = document.getElementById('action-' + n);
+    if (panel) panel.hidden = n !== name;
+  });
+  renderActionPanels();
+}
+
+function renderActionPanels() {
+  const totalEl = document.getElementById('action-total');
+  if (!totalEl) return; // panels not on this page
+
+  const has = allResults.length > 0;
+  totalEl.textContent = has ? allResults.length : '—';
+  document.getElementById('action-metals').textContent = has ? allResults.filter(m => m._type === 'metal').length : '—';
+  document.getElementById('action-sc').textContent = has ? allResults.filter(m => m._type === 'semiconductor').length : '—';
+  document.getElementById('action-ins').textContent = has ? allResults.filter(m => m._type === 'insulator').length : '—';
+
+  const searchHint = document.getElementById('action-search-hint');
+  if (searchHint) {
+    searchHint.textContent = has
+      ? `Showing ${filteredResults.length} of ${allResults.length} materials below.`
+      : 'Search an element above to populate live results, then scroll down to browse them.';
+  }
+
+  const list = document.getElementById('action-compare-list');
+  if (list) {
+    if (compareSet.size === 0) {
+      list.innerHTML = `<p class="action-hint">Select materials with the Compare checkbox on any card to see them here.</p>`;
+    } else {
+      const items = [...compareSet].map(mid => allResults.find(r => r.material_id === mid) || favoriteData[mid]).filter(Boolean);
+      list.innerHTML = items.map(m => `<span class="action-chip">${escHtml(m.formula_pretty || m.material_id)}</span>`).join('');
+    }
+  }
+
+  const exportHint = document.getElementById('action-export-hint');
+  if (exportHint) {
+    exportHint.textContent = `${filteredResults.length} material${filteredResults.length !== 1 ? 's' : ''} ready to export.`;
+  }
 }
 
 async function doSearch() {
@@ -78,18 +164,29 @@ async function doSearch() {
   if (!rawInput) { resetState(); return; }
 
   // Dash-separated input (e.g. "Fe-O", "Iron-Oxygen") → use chemsys for exact system
-  // Comma/space-separated or single element → use elements (contains)
+  // Comma/space-separated → use elements (contains)
+  // Single token that isn't itself a known element (e.g. "CH4", "Fe2O3", "NaCl") → formula match
   const isDashSystem = /^[A-Za-z]+-[A-Za-z]/.test(rawInput) && !rawInput.includes(',');
+  const isMultiToken = /[,\s]/.test(rawInput.trim());
 
   let queryParam, queryValue;
   if (isDashSystem) {
     const parts = rawInput.split('-').map(t => resolveElement(t.trim())).filter(Boolean);
     queryParam = 'chemsys';
     queryValue = parts.join('-');
-  } else {
+  } else if (isMultiToken) {
     const parts = rawInput.split(/[,\s]+/).map(t => resolveElement(t.trim())).filter(Boolean);
     queryParam = 'elements';
     queryValue = parts.join(',');
+  } else {
+    const resolved = resolveElement(rawInput);
+    if (VALID_SYMBOLS.has(resolved)) {
+      queryParam = 'elements';
+      queryValue = resolved;
+    } else {
+      queryParam = 'formula';
+      queryValue = normalizeFormula(rawInput);
+    }
   }
 
   showLoading();
@@ -201,6 +298,7 @@ function applyFiltersAndSort() {
   renderPage();
   renderPagination();
   document.getElementById('results-count').textContent = `Showing ${filteredResults.length} of ${allResults.length} materials`;
+  renderActionPanels();
 }
 
 // Register range/filter inputs
@@ -678,6 +776,7 @@ function toggleCompare(e, mid) {
   const card = document.querySelector(`.card[data-mid="${mid}"]`);
   if (card) card.classList.toggle('compare-selected', compareSet.has(mid));
   updateCompareBadge();
+  renderActionPanels();
 }
 
 function updateCompareBadge() {
@@ -697,6 +796,7 @@ function clearCompare() {
   });
   updateCompareBadge();
   document.getElementById('compare-modal').classList.remove('open');
+  renderActionPanels();
 }
 
 function openCompareModal() {
@@ -782,6 +882,7 @@ function toggleCompareFromModal(mid) {
     compareSet.add(mid);
   }
   updateCompareBadge();
+  renderActionPanels();
   const isCmp = compareSet.has(mid);
   if (btn) {
     btn.classList.toggle('cmp-active', isCmp);
@@ -809,6 +910,7 @@ document.addEventListener('keydown', e => {
 });
 
 updateFavBadge();
+renderActionPanels();
 
 // ─── Scroll progress bar ──────────────────────────────────
 const scrollProgress = document.getElementById('scroll-progress');
