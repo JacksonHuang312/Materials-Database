@@ -3,7 +3,7 @@ const https = require('https');
 // Vercel serverless function: proxies /api/* → api.materialsproject.org/*
 // Mirrors the local server.js proxy so the frontend's fetch('/api/...') calls
 // work identically in both environments.
-module.exports = (req, res) => {
+module.exports = async (req, res) => {
   const apiKey = process.env.MP_API_KEY;
   if (!apiKey) {
     res.writeHead(500, { 'Content-Type': 'application/json' });
