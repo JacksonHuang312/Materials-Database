@@ -194,7 +194,7 @@ async function doSearch() {
 
   try {
     const fields = 'material_id,formula_pretty,elements,nsites,band_gap,formation_energy_per_atom,is_stable,symmetry,density,volume,e_above_hull,efermi,theoretical,is_magnetic';
-    const url = `${BASE_URL}/materials/summary/?${queryParam}=${encodeURIComponent(queryValue)}&_fields=${encodeURIComponent(fields)}&_limit=200`;
+    const url = `${BASE_URL}/materials/summary?${queryParam}=${encodeURIComponent(queryValue)}&_fields=${encodeURIComponent(fields)}&_limit=200`;
 
     const res = await fetch(url);
 

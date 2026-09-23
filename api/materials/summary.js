@@ -1,9 +1,12 @@
 const https = require('https');
 
-// Vercel serverless function: proxies /api/* → api.materialsproject.org/*
-// Mirrors the local server.js proxy so the frontend's fetch('/api/...') calls
-// work identically in both environments.
-module.exports = async (req, res) => {
+// Vercel serverless function for the one endpoint the frontend actually
+// calls. A generic api/[...path].js catch-all was tried first, but this
+// deployment's build resolves that bracket syntax as a single dynamic
+// segment instead of a true catch-all (multi-segment paths under /api
+// never reach the function, edge returns 404 before invocation) — so an
+// exact nested path is used instead, matching /api/materials/summary.
+module.exports = (req, res) => {
   const apiKey = process.env.MP_API_KEY;
   if (!apiKey) {
     res.writeHead(500, { 'Content-Type': 'application/json' });
@@ -11,12 +14,13 @@ module.exports = async (req, res) => {
     return;
   }
 
-  const mpPath = req.url.replace(/^\/api/, '');
+  const queryIndex = req.url.indexOf('?');
+  const search = queryIndex === -1 ? '' : req.url.slice(queryIndex);
 
   const proxyReq = https.request(
     {
       hostname: 'api.materialsproject.org',
-      path: mpPath,
+      path: `/materials/summary/${search}`,
       method: 'GET',
       headers: { 'X-API-KEY': apiKey, Accept: 'application/json' },
     },
